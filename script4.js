@@ -82,13 +82,27 @@ function getZViewSlice(data, slice, size) {
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.y);
 }
 
-
-const rectZView = myZViewCanvas.getBoundingClientRect();
-myZViewCanvas.addEventListener('mousemove', event => {
-    const xCoor = event.x - rectZView.x
-    const yCoor = event.y - rectZView.y
+myZViewCanvas.addEventListener('click', event => {
+    const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
+    const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
+    console.log(document.documentElement.scrollTop);
     xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
     yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
+});
+
+myYViewCanvas.addEventListener('click', event => {
+    const xCoor = event.pageX - myYViewCanvas.offsetLeft;
+    const yCoor = dims.z - (event.pageY - myYViewCanvas.offsetTop);
+    xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(data, yCoor, dims) ,0,0);
+});
+
+myXViewCanvas.addEventListener('click', event => {
+    const xCoor = event.pageX - myXViewCanvas.offsetLeft;
+    const yCoor = dims.z - (event.pageY - myXViewCanvas.offsetTop);
+    console.log(document.documentElement.scrollTop);
+    yViewContext.putImageData(getYViewSlice(data, xCoor, dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(data, yCoor, dims) ,0,0);
 });
 
 function get1DIndex(x,y,z,size) {
