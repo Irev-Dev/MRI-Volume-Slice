@@ -11,7 +11,6 @@ const theMax = data.reduce((accumulate, item) => {
     return accumulate;
 }, 0);
 
-console.log(theMax);
 data = data.map(item => Math.round(item*255/theMax));
 
 const myXCanvas = document.createElement("canvas");
@@ -79,7 +78,7 @@ function GetXslice(data, slice, size) {
     sliceLength = size.x * size.y;
     sliceOffset = sliceLength * slice;
     const sliceRGBA = data
-    .slice(sliceOffset, sliceOffset + sliceLength)
+    .slice(get1DIndex(0,0,slice,size), get1DIndex(0,0,slice,size) + sliceLength)
     .reduce((accumulate, item) => {
         accumulate.push(item, item, item, 255);
         return accumulate;
@@ -109,9 +108,6 @@ myYCanvas.addEventListener('mousemove', event => {
     zDiv.appendChild(myZCanvas);
 });
 
-
-// let lolk = data.slice(0,240*280*a).reduce((acc,item) => {
-//     acc.push(item,item,item,255);
-//     return acc;
-// },[]);
-// outputData = new ImageData(new Uint8ClampedArray(lolk),240, 280*a);
+function get1DIndex(x,y,z,size) {
+    return z*size.x*size.y + y*size.x + x;
+}
