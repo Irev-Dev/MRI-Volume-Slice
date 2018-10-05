@@ -12,31 +12,29 @@ const theMax = data.reduce((accumulate, item) => {
 
 data = data.map(item => Math.round(item*255/theMax));
 
-const myXCanvas = document.createElement("canvas");
-myXCanvas.width = dims.x;
-myXCanvas.height = dims.y;
-myXCanvas.id = 'myXCanvas';
-const xContext = myXCanvas.getContext('2d');
-xContext.putImageData(GetXslice(data, 120, dims) ,0,0);
-const myXWrapper = document.getElementById('my-wrapper');
-xDiv = document.getElementById('x-wrapper');
-xDiv.appendChild(myXCanvas);
+const myZViewCanvas = document.createElement("canvas");
+myZViewCanvas.width = dims.x;
+myZViewCanvas.height = dims.y;
+const zViewContext = myZViewCanvas.getContext('2d');
+zViewContext.putImageData(getZViewSlice(data, 120, dims) ,0,0);
+xDiv = document.getElementById('z-view-wrapper');
+xDiv.appendChild(myZViewCanvas);
 
 const myYViewCanvas = document.createElement("canvas");
 myYViewCanvas.width = dims.x;
 myYViewCanvas.height = dims.z;
-const YContext = myYViewCanvas.getContext('2d');
-YContext.putImageData(getYViewSlice(data, 240, dims) ,0,0);
+const yViewContext = myYViewCanvas.getContext('2d');
+yViewContext.putImageData(getYViewSlice(data, 240, dims) ,0,0);
 yDiv = document.getElementById('y-view-wrapper');
 yDiv.appendChild(myYViewCanvas);
 
-const myZCanvas = document.createElement("canvas");
-myZCanvas.width = dims.y;
-myZCanvas.height = dims.z;
-const ZContext = myZCanvas.getContext('2d');
-ZContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
+const myXViewCanvas = document.createElement("canvas");
+myXViewCanvas.width = dims.y;
+myXViewCanvas.height = dims.z;
+const xViewContext = myXViewCanvas.getContext('2d');
+xViewContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
 zDiv = document.getElementById('x-view-wrapper');
-zDiv.appendChild(myZCanvas);
+zDiv.appendChild(myXViewCanvas);
 
 function getXViewSlice(data, slice, size) {
     sliceLength = size.z;
@@ -72,7 +70,7 @@ function getYViewSlice(data, slice, size) {
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.z);
 }
 
-function GetXslice(data, slice, size) {
+function getZViewSlice(data, slice, size) {
     sliceLength = size.x * size.y;
     sliceOffset = sliceLength * slice;
     const sliceRGBA = data
@@ -85,12 +83,12 @@ function GetXslice(data, slice, size) {
 }
 
 
-rectX = myXCanvas.getBoundingClientRect();
-myXCanvas.addEventListener('mousemove', event => {
-    const xCoor = event.x - rectX.x
-    const yCoor = event.y - rectX.y
-    ZContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
-    YContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
+const rectZView = myZViewCanvas.getBoundingClientRect();
+myZViewCanvas.addEventListener('mousemove', event => {
+    const xCoor = event.x - rectZView.x
+    const yCoor = event.y - rectZView.y
+    xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
+    yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
 });
 
 function get1DIndex(x,y,z,size) {
