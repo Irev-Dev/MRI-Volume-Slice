@@ -4,11 +4,21 @@
   "description": "",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel index.html"
   },
   "author": "",
   "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "parcel-bundler": "^1.9.7"
+  },
   "dependencies": {
-    "nifti-js": "^1.0.1"
+    "file-system": "^2.2.2",
+    "fs": "0.0.1-security",
+    "fs-extra": "^7.0.0",
+    "images": "^3.0.1",
+    "nifti-js": "^1.0.1",
+    "node-fs": "^0.1.7",
+    "read-json-sync": "^2.0.0"
   }
 }
