@@ -106,5 +106,5 @@ myXViewCanvas.addEventListener('click', event => {
 });
 
 function get1DIndex(x,y,z,size) {
-    return z*size.x*size.y + y*size.x + x;
+    return  x + y*size.x + z*size.x*size.y;
 }
