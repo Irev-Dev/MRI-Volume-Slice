@@ -4,7 +4,6 @@ dims = {
     y:280,
     z:240,
 };
-let a = 60;
 
 const theMax = data.reduce((accumulate, item) => {
     accumulate = item > accumulate ? item : accumulate;
@@ -23,31 +22,30 @@ const myXWrapper = document.getElementById('my-wrapper');
 xDiv = document.getElementById('x-wrapper');
 xDiv.appendChild(myXCanvas);
 
-const myYCanvas = document.createElement("canvas");
-myYCanvas.width = dims.y;
-myYCanvas.height = dims.z;
-const YContext = myYCanvas.getContext('2d');
-YContext.putImageData(GetYslice(data, 240, dims) ,0,0);
-yDiv = document.getElementById('y-wrapper');
-yDiv.appendChild(myYCanvas);
+const myYViewCanvas = document.createElement("canvas");
+myYViewCanvas.width = dims.x;
+myYViewCanvas.height = dims.z;
+const YContext = myYViewCanvas.getContext('2d');
+YContext.putImageData(getYViewSlice(data, 240, dims) ,0,0);
+yDiv = document.getElementById('y-view-wrapper');
+yDiv.appendChild(myYViewCanvas);
 
 const myZCanvas = document.createElement("canvas");
-myZCanvas.width = dims.z;
-myZCanvas.height = dims.x;
+myZCanvas.width = dims.y;
+myZCanvas.height = dims.z;
 const ZContext = myZCanvas.getContext('2d');
-ZContext.putImageData(GetZslice(data, 170, dims) ,0,0);
-zDiv = document.getElementById('z-wrapper');
+ZContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
+zDiv = document.getElementById('x-view-wrapper');
 zDiv.appendChild(myZCanvas);
 
-function GetZslice(data, slice, size) {
+function getXViewSlice(data, slice, size) {
     sliceLength = size.z;
     sliceOffset = sliceLength * slice;
     let sliceRGBA = [];
     const bigly = size.x*size.y;
     for(let j=size.z-1; j >= 0; j--) {
-        for(let i=0; i < size.x; i++) {
-            sliceRGBA.push(data[i*size.x + j*size.y*size.z + slice]);
-            // sliceRGBA.push(data[i*size.x*size.y + j*size.y + sliceOffset]);
+        for(let i=0; i < size.y; i++) {
+            sliceRGBA.push(data[get1DIndex(slice,i,j,size)]);
         }
     }
     sliceRGBA = sliceRGBA
@@ -55,23 +53,23 @@ function GetZslice(data, slice, size) {
         accumulate.push(item, item, item, 255);
         return accumulate;
     },[]);
-    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.z, size.x);
+    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.y, size.z);
 }
 
 
-function GetYslice(data, slice, size) {
+function getYViewSlice(data, slice, size) {
     sliceLength = size.x;
     sliceOffset = sliceLength * slice;
     let sliceRGBA = [];
-    for(let i=size.y-1; i >= 0; i--) {
-        sliceRGBA.push(...data.slice(i*size.x*size.y + sliceOffset, i*size.x*size.y + size.y + sliceOffset));
+    for(let i=size.z-1; i >= 0; i--) {
+        sliceRGBA.push(...data.slice(get1DIndex(0,slice,i,size), get1DIndex(0,slice,i,size) + size.x));
     }
     sliceRGBA = sliceRGBA
     .reduce((accumulate, item) => {
         accumulate.push(item, item, item, 255);
         return accumulate;
     },[]);
-    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.y, size.z);
+    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.z);
 }
 
 function GetXslice(data, slice, size) {
@@ -91,21 +89,8 @@ rectX = myXCanvas.getBoundingClientRect();
 myXCanvas.addEventListener('mousemove', event => {
     const xCoor = event.x - rectX.x
     const yCoor = event.y - rectX.y
-    ZContext.putImageData(GetZslice(data, xCoor, dims) ,0,0);
-    zDiv.appendChild(myZCanvas);
-    YContext.putImageData(GetYslice(data, yCoor, dims) ,0,0);
-    yDiv.appendChild(myYCanvas);
-});
-
-rectY = myYCanvas.getBoundingClientRect();
-myYCanvas.addEventListener('mousemove', event => {
-    const xCoor = event.x - rectY.x
-    const yCoor = event.y - rectY.y
-    console.log(xCoor, yCoor, event.y, rectY.y);
-    xContext.putImageData(GetXslice(data, yCoor, dims) ,0,0);
-    xDiv.appendChild(myZCanvas);
-    ZContext.putImageData(GetZslice(data, xCoor, dims) ,0,0);
-    zDiv.appendChild(myZCanvas);
+    ZContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
+    YContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
 });
 
 function get1DIndex(x,y,z,size) {
