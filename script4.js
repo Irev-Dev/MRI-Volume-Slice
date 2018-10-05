@@ -37,55 +37,39 @@ zDiv = document.getElementById('x-view-wrapper');
 zDiv.appendChild(myXViewCanvas);
 
 function getXViewSlice(data, slice, size) {
-    sliceLength = size.z;
-    sliceOffset = sliceLength * slice;
     let sliceRGBA = [];
-    const bigly = size.x*size.y;
-    for(let j=size.z-1; j >= 0; j--) {
-        for(let i=0; i < size.y; i++) {
-            sliceRGBA.push(data[get1DIndex(slice,i,j,size)]);
+    // The order of these nested loops is important
+    for(let zIndex=size.z-1; zIndex >= 0; zIndex--) {
+        for(let yIndex=0; yIndex < size.y; yIndex++) {
+            sliceRGBA.push(data[get1DIndex(slice,yIndex,zIndex,size)]);
         }
     }
-    sliceRGBA = sliceRGBA
-    .reduce((accumulate, item) => {
-        accumulate.push(item, item, item, 255);
-        return accumulate;
-    },[]);
+    sliceRGBA = sliceRGBA.reduce(grayScaleToRGB,[]);
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.y, size.z);
 }
 
 
 function getYViewSlice(data, slice, size) {
-    sliceLength = size.x;
-    sliceOffset = sliceLength * slice;
     let sliceRGBA = [];
     for(let i=size.z-1; i >= 0; i--) {
-        sliceRGBA.push(...data.slice(get1DIndex(0,slice,i,size), get1DIndex(0,slice,i,size) + size.x));
+        const rowIndex = get1DIndex(0,slice,i,size);
+        sliceRGBA.push(...data.slice(rowIndex, rowIndex + size.x));
     }
-    sliceRGBA = sliceRGBA
-    .reduce((accumulate, item) => {
-        accumulate.push(item, item, item, 255);
-        return accumulate;
-    },[]);
+    sliceRGBA = sliceRGBA.reduce(grayScaleToRGB,[]);
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.z);
 }
 
 function getZViewSlice(data, slice, size) {
-    sliceLength = size.x * size.y;
-    sliceOffset = sliceLength * slice;
+    const sliceIndex = get1DIndex(0,0,slice,size);
     const sliceRGBA = data
-    .slice(get1DIndex(0,0,slice,size), get1DIndex(0,0,slice,size) + sliceLength)
-    .reduce((accumulate, item) => {
-        accumulate.push(item, item, item, 255);
-        return accumulate;
-    },[]);
+        .slice(sliceIndex, sliceIndex + size.x * size.y)
+        .reduce(grayScaleToRGB,[]);
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.y);
 }
 
 myZViewCanvas.addEventListener('click', event => {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
-    console.log(document.documentElement.scrollTop);
     xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
     yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
 });
@@ -100,10 +84,15 @@ myYViewCanvas.addEventListener('click', event => {
 myXViewCanvas.addEventListener('click', event => {
     const xCoor = event.pageX - myXViewCanvas.offsetLeft;
     const yCoor = dims.z - (event.pageY - myXViewCanvas.offsetTop);
-    console.log(document.documentElement.scrollTop);
     yViewContext.putImageData(getYViewSlice(data, xCoor, dims) ,0,0);
     zViewContext.putImageData(getZViewSlice(data, yCoor, dims) ,0,0);
 });
+
+function grayScaleToRGB(accumulate, RGandB) {
+    const alpha = 255;
+    accumulate.push(RGandB, RGandB, RGandB, alpha);
+    return accumulate;
+}
 
 function get1DIndex(x,y,z,size) {
     return  x + y*size.x + z*size.x*size.y;
