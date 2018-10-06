@@ -29,8 +29,8 @@ yDiv = document.getElementById('y-view-wrapper');
 yDiv.appendChild(myYViewCanvas);
 
 const myXViewCanvas = document.createElement("canvas");
-myXViewCanvas.width = dims.y;
-myXViewCanvas.height = dims.z;
+myXViewCanvas.width = dims.z;
+myXViewCanvas.height = dims.y;
 const xViewContext = myXViewCanvas.getContext('2d');
 xViewContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
 zDiv = document.getElementById('x-view-wrapper');
@@ -39,13 +39,14 @@ zDiv.appendChild(myXViewCanvas);
 function getXViewSlice(data, slice, size) {
     let sliceRGBA = [];
     // The order of these nested loops is important
-    for(let zIndex=size.z-1; zIndex >= 0; zIndex--) {
-        for(let yIndex=0; yIndex < size.y; yIndex++) {
+    // for(let zIndex=size.z-1; zIndex >= 0; zIndex--) {
+    for(let yIndex=0; yIndex < size.y; yIndex++) {
+        for(let zIndex=0; zIndex < size.z; zIndex++) {
             sliceRGBA.push(data[get1DIndex(slice,yIndex,zIndex,size)]);
         }
     }
     sliceRGBA = sliceRGBA.reduce(grayScaleToRGB,[]);
-    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.y, size.z);
+    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.z, size.y);
 }
 
 
@@ -82,10 +83,10 @@ myYViewCanvas.addEventListener('click', event => {
 });
 
 myXViewCanvas.addEventListener('click', event => {
-    const xCoor = event.pageX - myXViewCanvas.offsetLeft;
-    const yCoor = dims.z - (event.pageY - myXViewCanvas.offsetTop);
-    yViewContext.putImageData(getYViewSlice(data, xCoor, dims) ,0,0);
-    zViewContext.putImageData(getZViewSlice(data, yCoor, dims) ,0,0);
+    const xCoor = event.pageX - myXViewCanvas.offsetLeft + document.documentElement.scrollLeft;
+    const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
+    yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(data, xCoor, dims) ,0,0);
 });
 
 function grayScaleToRGB(accumulate, RGandB) {
