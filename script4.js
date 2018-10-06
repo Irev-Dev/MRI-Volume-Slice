@@ -8,36 +8,37 @@ const yViewContext = myYViewCanvas.getContext('2d');
 const xViewContext = myXViewCanvas.getContext('2d');
 
 let data; // globally defined variable with a name as generic as data, what could possibly go wrong - TODO don't do dis
+let dims; // globally defined variable with a name as generic as data, what could possibly go wrong - TODO don't do dis
 
 function setUp3ViewPorts() {
-    dims = {
-        x:240,
-        y:280,
-        z:240,
-    };
 
     const theMax = data.reduce((accumulate, item) => {
         accumulate = item > accumulate ? item : accumulate;
         return accumulate;
     }, 0);
-
-    data = data.map(item => Math.round(item*255/theMax));
-
+    
+    const theMin = data.reduce((accumulate, item) => {
+        accumulate = item < accumulate ? item : accumulate;
+        return accumulate;
+    }, 0);
+    
+    data = data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
+    
     myZViewCanvas.width = dims.x;
     myZViewCanvas.height = dims.y;
-    zViewContext.putImageData(getZViewSlice(data, 120, dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(data, Math.round(dims.z/2), dims) ,0,0);
     xDiv = document.getElementById('z-view-wrapper');
     xDiv.appendChild(myZViewCanvas);
 
     myYViewCanvas.width = dims.x;
     myYViewCanvas.height = dims.z;
-    yViewContext.putImageData(getYViewSlice(data, 240, dims) ,0,0);
+    yViewContext.putImageData(getYViewSlice(data, Math.round(dims.y/2), dims) ,0,0);
     yDiv = document.getElementById('y-view-wrapper');
     yDiv.appendChild(myYViewCanvas);
 
     myXViewCanvas.width = dims.z;
     myXViewCanvas.height = dims.y;
-    xViewContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
+    xViewContext.putImageData(getXViewSlice(data, Math.round(dims.x/2), dims) ,0,0);
     zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(myXViewCanvas);
 
@@ -133,9 +134,14 @@ function get1DIndex(x,y,z,size) {
 document.getElementById('file-input').onchange = function (event) {
     const fr = new FileReader();
     fr.onload = () => {
-        const file = nifti.parse(fr.result);
-        data = file.data;
+        const niftiFile = nifti.parse(fr.result);
+        dims = {
+            x:niftiFile.sizes[0],
+            y:niftiFile.sizes[1],
+            z:niftiFile.sizes[2],
+        };
+        data = niftiFile.data;
         setUp3ViewPorts();
     }
-    const what = fr.readAsArrayBuffer(event.target.files[0]);
+    fr.readAsArrayBuffer(event.target.files[0]);
   };
