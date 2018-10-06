@@ -39,7 +39,6 @@ zDiv.appendChild(myXViewCanvas);
 function getXViewSlice(data, slice, size) {
     let sliceRGBA = [];
     // The order of these nested loops is important
-    // for(let zIndex=size.z-1; zIndex >= 0; zIndex--) {
     for(let yIndex=0; yIndex < size.y; yIndex++) {
         for(let zIndex=0; zIndex < size.z; zIndex++) {
             sliceRGBA.push(data[get1DIndex(slice,yIndex,zIndex,size)]);
@@ -68,26 +67,51 @@ function getZViewSlice(data, slice, size) {
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.y);
 }
 
-myZViewCanvas.addEventListener('click', event => {
+mouseDown = false;
+document.body.addEventListener('mousedown', event => mouseDown = true);
+document.body.addEventListener('mouseup', event => mouseDown = false);
+
+myZViewCanvas.addEventListener('click', updateZView);
+myZViewCanvas.addEventListener('mousemove', event => {
+    if(mouseDown) {
+        updateZView(event);
+    }
+});
+
+myYViewCanvas.addEventListener('click', updateYView);
+myYViewCanvas.addEventListener('mousemove', event => {
+    if(mouseDown) {
+        updateYView(event);
+    }
+});
+
+myXViewCanvas.addEventListener('click', updateXView);
+myXViewCanvas.addEventListener('mousemove', event => {
+    if(mouseDown) {
+        updateXView(event);
+    }
+});
+
+function updateZView(event) {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
     xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
     yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
-});
+}
 
-myYViewCanvas.addEventListener('click', event => {
+function updateYView(event) {
     const xCoor = event.pageX - myYViewCanvas.offsetLeft;
     const yCoor = dims.z - (event.pageY - myYViewCanvas.offsetTop);
     xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
     zViewContext.putImageData(getZViewSlice(data, yCoor, dims) ,0,0);
-});
+}
 
-myXViewCanvas.addEventListener('click', event => {
+function updateXView(event) {
     const xCoor = event.pageX - myXViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
     yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
     zViewContext.putImageData(getZViewSlice(data, xCoor, dims) ,0,0);
-});
+}
 
 function grayScaleToRGB(accumulate, RGandB) {
     const alpha = 255;
