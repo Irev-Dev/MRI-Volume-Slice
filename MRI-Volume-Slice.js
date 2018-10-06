@@ -4,9 +4,11 @@ class MRISlice {
     constructor(nifti) {
       this.nifti = nifti;
 
-      this.x = nifti.sizes[0];
-      this.y = nifti.sizes[1];
-      this.z = nifti.sizes[2];
+      this.size = {
+        x: nifti.sizes[0],
+        y: nifti.sizes[1],
+        z: nifti.sizes[2],
+      };
       
       // this.volume = nifti.data;
 

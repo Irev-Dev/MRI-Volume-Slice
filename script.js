@@ -11,25 +11,23 @@ const zViewContext = myZViewCanvas.getContext('2d');
 const yViewContext = myYViewCanvas.getContext('2d');
 const xViewContext = myXViewCanvas.getContext('2d');
 
-let dims; // globally defined variable with a name as generic as data, what could possibly go wrong - TODO don't do dis
-
 function setUp3ViewPorts() {
 
-    myZViewCanvas.width = dims.x;
-    myZViewCanvas.height = dims.y;
-    zViewContext.putImageData(getZViewSlice(mRISlice.volume, Math.round(dims.z/2), dims) ,0,0);
+    myZViewCanvas.width = mRISlice.size.x;
+    myZViewCanvas.height = mRISlice.size.y;
+    zViewContext.putImageData(getZViewSlice(mRISlice.volume, Math.round(mRISlice.size.z/2), mRISlice.size) ,0,0);
     const xDiv = document.getElementById('z-view-wrapper');
     xDiv.appendChild(myZViewCanvas);
 
-    myYViewCanvas.width = dims.x;
-    myYViewCanvas.height = dims.z;
-    yViewContext.putImageData(getYViewSlice(mRISlice.volume, Math.round(dims.y/2), dims) ,0,0);
+    myYViewCanvas.width = mRISlice.size.x;
+    myYViewCanvas.height = mRISlice.size.z;
+    yViewContext.putImageData(getYViewSlice(mRISlice.volume, Math.round(mRISlice.size.y/2), mRISlice.size) ,0,0);
     const yDiv = document.getElementById('y-view-wrapper');
     yDiv.appendChild(myYViewCanvas);
 
-    myXViewCanvas.width = dims.z;
-    myXViewCanvas.height = dims.y;
-    xViewContext.putImageData(getXViewSlice(mRISlice.volume, Math.round(dims.x/2), dims) ,0,0);
+    myXViewCanvas.width = mRISlice.size.z;
+    myXViewCanvas.height = mRISlice.size.y;
+    xViewContext.putImageData(getXViewSlice(mRISlice.volume, Math.round(mRISlice.size.x/2), mRISlice.size) ,0,0);
     const zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(myXViewCanvas);
 
@@ -94,22 +92,22 @@ document.body.addEventListener('mouseup', event => mouseDown = false);
 function updateZView(event) {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
-    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, dims) ,0,0);
-    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, dims) ,0,0);
+    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
+    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
 }
 
 function updateYView(event) {
     const xCoor = event.pageX - myYViewCanvas.offsetLeft;
-    const yCoor = dims.z - (event.pageY - myYViewCanvas.offsetTop);
-    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, dims) ,0,0);
-    zViewContext.putImageData(getZViewSlice(mRISlice.volume, yCoor, dims) ,0,0);
+    const yCoor = mRISlice.size.z - (event.pageY - myYViewCanvas.offsetTop);
+    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
+    zViewContext.putImageData(getZViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
 }
 
 function updateXView(event) {
     const xCoor = event.pageX - myXViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
-    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, dims) ,0,0);
-    zViewContext.putImageData(getZViewSlice(mRISlice.volume, xCoor, dims) ,0,0);
+    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
+    zViewContext.putImageData(getZViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
 }
 
 function grayScaleToRGB(accumulate, RGandB) {
@@ -137,13 +135,6 @@ document.getElementById('file-input').onchange = function (event) {
     const fr = new FileReader();
     fr.onload = () => {
         mRISlice = new MRISlice(nifti.parse(fr.result));
-        // const niftiFile = nifti.parse(fr.result);
-        dims = {
-            x:mRISlice.x,
-            y:mRISlice.y,
-            z:mRISlice.z,
-        };
-        // data = mRISlice.volume;
         setUp3ViewPorts();
     }
     fr.readAsArrayBuffer(event.target.files[0]);
