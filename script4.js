@@ -52,8 +52,8 @@ function getXViewSlice(data, slice, size) {
 
 function getYViewSlice(data, slice, size) {
     let sliceRGBA = [];
-    for(let i=size.z-1; i >= 0; i--) {
-        const rowIndex = get1DIndex(0,slice,i,size);
+    for(let zIndex=size.z-1; zIndex >= 0; zIndex--) {
+        const rowIndex = get1DIndex(0,slice,zIndex,size);
         sliceRGBA.push(...data.slice(rowIndex, rowIndex + size.x));
     }
     sliceRGBA = sliceRGBA.reduce(grayScaleToRGB,[]);
