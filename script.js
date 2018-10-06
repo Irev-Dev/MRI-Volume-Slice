@@ -1,4 +1,11 @@
 const nifti = require('nifti-js');
+// const MRISlice = require('./MRI-Volume-Slice');
+import MRISlice from './MRI-Volume-Slice';
+
+let mRISlice;
+
+mRISlice = new MRISlice();
+console.log(MRISlice,mRISlice);
 
 const myXViewCanvas = document.createElement("canvas");
 const myYViewCanvas = document.createElement("canvas");
@@ -27,19 +34,19 @@ function setUp3ViewPorts() {
     myZViewCanvas.width = dims.x;
     myZViewCanvas.height = dims.y;
     zViewContext.putImageData(getZViewSlice(data, Math.round(dims.z/2), dims) ,0,0);
-    xDiv = document.getElementById('z-view-wrapper');
+    const xDiv = document.getElementById('z-view-wrapper');
     xDiv.appendChild(myZViewCanvas);
 
     myYViewCanvas.width = dims.x;
     myYViewCanvas.height = dims.z;
     yViewContext.putImageData(getYViewSlice(data, Math.round(dims.y/2), dims) ,0,0);
-    yDiv = document.getElementById('y-view-wrapper');
+    const yDiv = document.getElementById('y-view-wrapper');
     yDiv.appendChild(myYViewCanvas);
 
     myXViewCanvas.width = dims.z;
     myXViewCanvas.height = dims.y;
     xViewContext.putImageData(getXViewSlice(data, Math.round(dims.x/2), dims) ,0,0);
-    zDiv = document.getElementById('x-view-wrapper');
+    const zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(myXViewCanvas);
 
     myZViewCanvas.addEventListener('click', updateZView);
