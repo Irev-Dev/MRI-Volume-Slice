@@ -23,7 +23,24 @@ class MRISlice {
       }, 0);
       
       this.volume = nifti.data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
+    }
 
+    getZViewSlice(slice) {
+      const sliceIndex = this._get1DIndex(0,0,slice);
+      const sliceRGBA = this.volume
+          .slice(sliceIndex, sliceIndex + this.size.x * this.size.y)
+          .reduce(this._grayScaleToRGB,[]);
+      return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.x, this.size.y);
+    }
+
+    _get1DIndex(x,y,z) {
+      return  x + y*this.size.x + z*this.size.x*this.size.y;
+    }
+
+    _grayScaleToRGB(accumulate, RGandB) {
+      const alpha = 255;
+      accumulate.push(RGandB, RGandB, RGandB, alpha);
+      return accumulate;
     }
 
 }

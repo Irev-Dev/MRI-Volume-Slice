@@ -15,7 +15,7 @@ function setUp3ViewPorts() {
 
     myZViewCanvas.width = mRISlice.size.x;
     myZViewCanvas.height = mRISlice.size.y;
-    zViewContext.putImageData(getZViewSlice(mRISlice.volume, Math.round(mRISlice.size.z/2), mRISlice.size) ,0,0);
+    zViewContext.putImageData(mRISlice.getZViewSlice(Math.round(mRISlice.size.z/2)) ,0,0);
     const xDiv = document.getElementById('z-view-wrapper');
     xDiv.appendChild(myZViewCanvas);
 
@@ -76,14 +76,6 @@ function getYViewSlice(data, slice, size) {
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.z);
 }
 
-function getZViewSlice(data, slice, size) {
-    const sliceIndex = get1DIndex(0,0,slice,size);
-    const sliceRGBA = data
-        .slice(sliceIndex, sliceIndex + size.x * size.y)
-        .reduce(grayScaleToRGB,[]);
-    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.y);
-}
-
 let mouseDown = false;
 document.body.addEventListener('mousedown', event => mouseDown = true);
 document.body.addEventListener('mouseup', event => mouseDown = false);
@@ -100,14 +92,14 @@ function updateYView(event) {
     const xCoor = event.pageX - myYViewCanvas.offsetLeft;
     const yCoor = mRISlice.size.z - (event.pageY - myYViewCanvas.offsetTop);
     xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
-    zViewContext.putImageData(getZViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
+    zViewContext.putImageData(mRISlice.getZViewSlice(yCoor) ,0,0);
 }
 
 function updateXView(event) {
     const xCoor = event.pageX - myXViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
     yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
-    zViewContext.putImageData(getZViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
+    zViewContext.putImageData(mRISlice.getZViewSlice(xCoor) ,0,0);
 }
 
 function grayScaleToRGB(accumulate, RGandB) {
