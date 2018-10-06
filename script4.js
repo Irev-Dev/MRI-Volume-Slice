@@ -131,6 +131,17 @@ function get1DIndex(x,y,z,size) {
     return  x + y*size.x + z*size.x*size.y;
 }
 
+function get3DIndex(index,size) {
+    const zChunkLength = size.x*size.y;
+    const yChunkLength = size.y;
+    
+    const z = Math.floor(index / zChunkLength);
+    const y = Math.floor((index - z) / yChunkLength);
+    const x = index - z - y;
+
+    return  [x, y, z];
+}
+
 document.getElementById('file-input').onchange = function (event) {
     const fr = new FileReader();
     fr.onload = () => {
