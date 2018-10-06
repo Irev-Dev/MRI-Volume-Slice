@@ -43,6 +43,18 @@ class MRISlice {
       return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.x, this.size.z);
     }
 
+    getXViewSlice(slice) {
+      let sliceRGBA = [];
+      // The order of these nested loops is important
+      for(let yIndex=0; yIndex < this.size.y; yIndex++) {
+          for(let zIndex=0; zIndex < this.size.z; zIndex++) {
+              sliceRGBA.push(this.volume[this._get1DIndex(slice,yIndex,zIndex)]);
+          }
+      }
+      sliceRGBA = sliceRGBA.reduce(this._grayScaleToRGB,[]);
+      return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.z, this.size.y);
+    }
+
     _get1DIndex(x,y,z) {
       return  x + y*this.size.x + z*this.size.x*this.size.y;
     }
@@ -51,6 +63,17 @@ class MRISlice {
       const alpha = 255;
       accumulate.push(RGandB, RGandB, RGandB, alpha);
       return accumulate;
+    }
+
+    _get3DIndex(index,size) {
+      const zChunkLength = size.x*size.y;
+      const yChunkLength = size.y;
+      
+      const z = Math.floor(index / zChunkLength);
+      const y = Math.floor((index - z) / yChunkLength);
+      const x = index - z - y;
+  
+      return  [x, y, z];
     }
 
 }

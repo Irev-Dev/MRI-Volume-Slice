@@ -27,7 +27,7 @@ function setUp3ViewPorts() {
 
     myXViewCanvas.width = mRISlice.size.z;
     myXViewCanvas.height = mRISlice.size.y;
-    xViewContext.putImageData(getXViewSlice(mRISlice.volume, Math.round(mRISlice.size.x/2), mRISlice.size) ,0,0);
+    xViewContext.putImageData(mRISlice.getXViewSlice(Math.round(mRISlice.size.x/2)) ,0,0);
     const zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(myXViewCanvas);
 
@@ -53,18 +53,6 @@ function setUp3ViewPorts() {
     });
 }
 
-function getXViewSlice(data, slice, size) {
-    let sliceRGBA = [];
-    // The order of these nested loops is important
-    for(let yIndex=0; yIndex < size.y; yIndex++) {
-        for(let zIndex=0; zIndex < size.z; zIndex++) {
-            sliceRGBA.push(data[get1DIndex(slice,yIndex,zIndex,size)]);
-        }
-    }
-    sliceRGBA = sliceRGBA.reduce(grayScaleToRGB,[]);
-    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.z, size.y);
-}
-
 let mouseDown = false;
 document.body.addEventListener('mousedown', event => mouseDown = true);
 document.body.addEventListener('mouseup', event => mouseDown = false);
@@ -73,14 +61,14 @@ document.body.addEventListener('mouseup', event => mouseDown = false);
 function updateZView(event) {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
-    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
+    xViewContext.putImageData(mRISlice.getXViewSlice(xCoor) ,0,0);
     yViewContext.putImageData(mRISlice.getYViewSlice(yCoor) ,0,0);
 }
 
 function updateYView(event) {
     const xCoor = event.pageX - myYViewCanvas.offsetLeft;
     const yCoor = mRISlice.size.z - (event.pageY - myYViewCanvas.offsetTop);
-    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
+    xViewContext.putImageData(mRISlice.getXViewSlice(xCoor) ,0,0);
     zViewContext.putImageData(mRISlice.getZViewSlice(yCoor) ,0,0);
 }
 
@@ -89,27 +77,6 @@ function updateXView(event) {
     const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
     yViewContext.putImageData(mRISlice.getYViewSlice(yCoor) ,0,0);
     zViewContext.putImageData(mRISlice.getZViewSlice(xCoor) ,0,0);
-}
-
-function grayScaleToRGB(accumulate, RGandB) {
-    const alpha = 255;
-    accumulate.push(RGandB, RGandB, RGandB, alpha);
-    return accumulate;
-}
-
-function get1DIndex(x,y,z,size) {
-    return  x + y*size.x + z*size.x*size.y;
-}
-
-function get3DIndex(index,size) {
-    const zChunkLength = size.x*size.y;
-    const yChunkLength = size.y;
-    
-    const z = Math.floor(index / zChunkLength);
-    const y = Math.floor((index - z) / yChunkLength);
-    const x = index - z - y;
-
-    return  [x, y, z];
 }
 
 document.getElementById('file-input').onchange = function (event) {
