@@ -1,40 +1,67 @@
-
-dims = {
-    x:240,
-    y:280,
-    z:240,
-};
-
-const theMax = data.reduce((accumulate, item) => {
-    accumulate = item > accumulate ? item : accumulate;
-    return accumulate;
-}, 0);
-
-data = data.map(item => Math.round(item*255/theMax));
-
-const myZViewCanvas = document.createElement("canvas");
-myZViewCanvas.width = dims.x;
-myZViewCanvas.height = dims.y;
-const zViewContext = myZViewCanvas.getContext('2d');
-zViewContext.putImageData(getZViewSlice(data, 120, dims) ,0,0);
-xDiv = document.getElementById('z-view-wrapper');
-xDiv.appendChild(myZViewCanvas);
-
-const myYViewCanvas = document.createElement("canvas");
-myYViewCanvas.width = dims.x;
-myYViewCanvas.height = dims.z;
-const yViewContext = myYViewCanvas.getContext('2d');
-yViewContext.putImageData(getYViewSlice(data, 240, dims) ,0,0);
-yDiv = document.getElementById('y-view-wrapper');
-yDiv.appendChild(myYViewCanvas);
+const nifti = require('nifti-js');
 
 const myXViewCanvas = document.createElement("canvas");
-myXViewCanvas.width = dims.z;
-myXViewCanvas.height = dims.y;
+const myYViewCanvas = document.createElement("canvas");
+const myZViewCanvas = document.createElement("canvas");
+const zViewContext = myZViewCanvas.getContext('2d');
+const yViewContext = myYViewCanvas.getContext('2d');
 const xViewContext = myXViewCanvas.getContext('2d');
-xViewContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
-zDiv = document.getElementById('x-view-wrapper');
-zDiv.appendChild(myXViewCanvas);
+
+let data; // globally defined variable with a name as generic as data, what could possibly go wrong - TODO don't do dis
+
+function setUp3ViewPorts() {
+    dims = {
+        x:240,
+        y:280,
+        z:240,
+    };
+
+    const theMax = data.reduce((accumulate, item) => {
+        accumulate = item > accumulate ? item : accumulate;
+        return accumulate;
+    }, 0);
+
+    data = data.map(item => Math.round(item*255/theMax));
+
+    myZViewCanvas.width = dims.x;
+    myZViewCanvas.height = dims.y;
+    zViewContext.putImageData(getZViewSlice(data, 120, dims) ,0,0);
+    xDiv = document.getElementById('z-view-wrapper');
+    xDiv.appendChild(myZViewCanvas);
+
+    myYViewCanvas.width = dims.x;
+    myYViewCanvas.height = dims.z;
+    yViewContext.putImageData(getYViewSlice(data, 240, dims) ,0,0);
+    yDiv = document.getElementById('y-view-wrapper');
+    yDiv.appendChild(myYViewCanvas);
+
+    myXViewCanvas.width = dims.z;
+    myXViewCanvas.height = dims.y;
+    xViewContext.putImageData(getXViewSlice(data, 170, dims) ,0,0);
+    zDiv = document.getElementById('x-view-wrapper');
+    zDiv.appendChild(myXViewCanvas);
+
+    myZViewCanvas.addEventListener('click', updateZView);
+    myZViewCanvas.addEventListener('mousemove', event => {
+        if(mouseDown) {
+            updateZView(event);
+        }
+    });
+    
+    myYViewCanvas.addEventListener('click', updateYView);
+    myYViewCanvas.addEventListener('mousemove', event => {
+        if(mouseDown) {
+            updateYView(event);
+        }
+    });
+    
+    myXViewCanvas.addEventListener('click', updateXView);
+    myXViewCanvas.addEventListener('mousemove', event => {
+        if(mouseDown) {
+            updateXView(event);
+        }
+    });
+}
 
 function getXViewSlice(data, slice, size) {
     let sliceRGBA = [];
@@ -67,30 +94,10 @@ function getZViewSlice(data, slice, size) {
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.y);
 }
 
-mouseDown = false;
+let mouseDown = false;
 document.body.addEventListener('mousedown', event => mouseDown = true);
 document.body.addEventListener('mouseup', event => mouseDown = false);
 
-myZViewCanvas.addEventListener('click', updateZView);
-myZViewCanvas.addEventListener('mousemove', event => {
-    if(mouseDown) {
-        updateZView(event);
-    }
-});
-
-myYViewCanvas.addEventListener('click', updateYView);
-myYViewCanvas.addEventListener('mousemove', event => {
-    if(mouseDown) {
-        updateYView(event);
-    }
-});
-
-myXViewCanvas.addEventListener('click', updateXView);
-myXViewCanvas.addEventListener('mousemove', event => {
-    if(mouseDown) {
-        updateXView(event);
-    }
-});
 
 function updateZView(event) {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
@@ -122,3 +129,13 @@ function grayScaleToRGB(accumulate, RGandB) {
 function get1DIndex(x,y,z,size) {
     return  x + y*size.x + z*size.x*size.y;
 }
+
+document.getElementById('file-input').onchange = function (event) {
+    const fr = new FileReader();
+    fr.onload = () => {
+        const file = nifti.parse(fr.result);
+        data = file.data;
+        setUp3ViewPorts();
+    }
+    const what = fr.readAsArrayBuffer(event.target.files[0]);
+  };
