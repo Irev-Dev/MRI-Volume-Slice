@@ -4,9 +4,6 @@ import MRISlice from './MRI-Volume-Slice';
 
 let mRISlice;
 
-mRISlice = new MRISlice();
-console.log(MRISlice,mRISlice);
-
 const myXViewCanvas = document.createElement("canvas");
 const myYViewCanvas = document.createElement("canvas");
 const myZViewCanvas = document.createElement("canvas");
@@ -14,38 +11,25 @@ const zViewContext = myZViewCanvas.getContext('2d');
 const yViewContext = myYViewCanvas.getContext('2d');
 const xViewContext = myXViewCanvas.getContext('2d');
 
-let data; // globally defined variable with a name as generic as data, what could possibly go wrong - TODO don't do dis
 let dims; // globally defined variable with a name as generic as data, what could possibly go wrong - TODO don't do dis
 
 function setUp3ViewPorts() {
 
-    const theMax = data.reduce((accumulate, item) => {
-        accumulate = item > accumulate ? item : accumulate;
-        return accumulate;
-    }, 0);
-    
-    const theMin = data.reduce((accumulate, item) => {
-        accumulate = item < accumulate ? item : accumulate;
-        return accumulate;
-    }, 0);
-    
-    data = data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
-    
     myZViewCanvas.width = dims.x;
     myZViewCanvas.height = dims.y;
-    zViewContext.putImageData(getZViewSlice(data, Math.round(dims.z/2), dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(mRISlice.volume, Math.round(dims.z/2), dims) ,0,0);
     const xDiv = document.getElementById('z-view-wrapper');
     xDiv.appendChild(myZViewCanvas);
 
     myYViewCanvas.width = dims.x;
     myYViewCanvas.height = dims.z;
-    yViewContext.putImageData(getYViewSlice(data, Math.round(dims.y/2), dims) ,0,0);
+    yViewContext.putImageData(getYViewSlice(mRISlice.volume, Math.round(dims.y/2), dims) ,0,0);
     const yDiv = document.getElementById('y-view-wrapper');
     yDiv.appendChild(myYViewCanvas);
 
     myXViewCanvas.width = dims.z;
     myXViewCanvas.height = dims.y;
-    xViewContext.putImageData(getXViewSlice(data, Math.round(dims.x/2), dims) ,0,0);
+    xViewContext.putImageData(getXViewSlice(mRISlice.volume, Math.round(dims.x/2), dims) ,0,0);
     const zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(myXViewCanvas);
 
@@ -110,22 +94,22 @@ document.body.addEventListener('mouseup', event => mouseDown = false);
 function updateZView(event) {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
-    xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
-    yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
+    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, dims) ,0,0);
+    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, dims) ,0,0);
 }
 
 function updateYView(event) {
     const xCoor = event.pageX - myYViewCanvas.offsetLeft;
     const yCoor = dims.z - (event.pageY - myYViewCanvas.offsetTop);
-    xViewContext.putImageData(getXViewSlice(data, xCoor, dims) ,0,0);
-    zViewContext.putImageData(getZViewSlice(data, yCoor, dims) ,0,0);
+    xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(mRISlice.volume, yCoor, dims) ,0,0);
 }
 
 function updateXView(event) {
     const xCoor = event.pageX - myXViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
-    yViewContext.putImageData(getYViewSlice(data, yCoor, dims) ,0,0);
-    zViewContext.putImageData(getZViewSlice(data, xCoor, dims) ,0,0);
+    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, dims) ,0,0);
+    zViewContext.putImageData(getZViewSlice(mRISlice.volume, xCoor, dims) ,0,0);
 }
 
 function grayScaleToRGB(accumulate, RGandB) {
@@ -152,13 +136,14 @@ function get3DIndex(index,size) {
 document.getElementById('file-input').onchange = function (event) {
     const fr = new FileReader();
     fr.onload = () => {
-        const niftiFile = nifti.parse(fr.result);
+        mRISlice = new MRISlice(nifti.parse(fr.result));
+        // const niftiFile = nifti.parse(fr.result);
         dims = {
-            x:niftiFile.sizes[0],
-            y:niftiFile.sizes[1],
-            z:niftiFile.sizes[2],
+            x:mRISlice.x,
+            y:mRISlice.y,
+            z:mRISlice.z,
         };
-        data = niftiFile.data;
+        // data = mRISlice.volume;
         setUp3ViewPorts();
     }
     fr.readAsArrayBuffer(event.target.files[0]);
