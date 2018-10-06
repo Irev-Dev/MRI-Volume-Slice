@@ -33,6 +33,16 @@ class MRISlice {
       return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.x, this.size.y);
     }
 
+    getYViewSlice(slice) {
+      let sliceRGBA = [];
+      for(let zIndex=this.size.z-1; zIndex >= 0; zIndex--) {
+          const rowIndex = this._get1DIndex(0,slice,zIndex);
+          sliceRGBA.push(...this.volume.slice(rowIndex, rowIndex + this.size.x));
+      }
+      sliceRGBA = sliceRGBA.reduce(this._grayScaleToRGB,[]);
+      return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.x, this.size.z);
+    }
+
     _get1DIndex(x,y,z) {
       return  x + y*this.size.x + z*this.size.x*this.size.y;
     }

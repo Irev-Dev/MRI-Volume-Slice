@@ -21,7 +21,7 @@ function setUp3ViewPorts() {
 
     myYViewCanvas.width = mRISlice.size.x;
     myYViewCanvas.height = mRISlice.size.z;
-    yViewContext.putImageData(getYViewSlice(mRISlice.volume, Math.round(mRISlice.size.y/2), mRISlice.size) ,0,0);
+    yViewContext.putImageData(mRISlice.getYViewSlice(Math.round(mRISlice.size.y/2)) ,0,0);
     const yDiv = document.getElementById('y-view-wrapper');
     yDiv.appendChild(myYViewCanvas);
 
@@ -65,17 +65,6 @@ function getXViewSlice(data, slice, size) {
     return new ImageData(new Uint8ClampedArray(sliceRGBA),size.z, size.y);
 }
 
-
-function getYViewSlice(data, slice, size) {
-    let sliceRGBA = [];
-    for(let zIndex=size.z-1; zIndex >= 0; zIndex--) {
-        const rowIndex = get1DIndex(0,slice,zIndex,size);
-        sliceRGBA.push(...data.slice(rowIndex, rowIndex + size.x));
-    }
-    sliceRGBA = sliceRGBA.reduce(grayScaleToRGB,[]);
-    return new ImageData(new Uint8ClampedArray(sliceRGBA),size.x, size.z);
-}
-
 let mouseDown = false;
 document.body.addEventListener('mousedown', event => mouseDown = true);
 document.body.addEventListener('mouseup', event => mouseDown = false);
@@ -85,7 +74,7 @@ function updateZView(event) {
     const xCoor = event.x - myZViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.y - myZViewCanvas.offsetTop + document.documentElement.scrollTop;
     xViewContext.putImageData(getXViewSlice(mRISlice.volume, xCoor, mRISlice.size) ,0,0);
-    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
+    yViewContext.putImageData(mRISlice.getYViewSlice(yCoor) ,0,0);
 }
 
 function updateYView(event) {
@@ -98,7 +87,7 @@ function updateYView(event) {
 function updateXView(event) {
     const xCoor = event.pageX - myXViewCanvas.offsetLeft + document.documentElement.scrollLeft;
     const yCoor = event.pageY - myXViewCanvas.offsetTop + document.documentElement.scrollTop;
-    yViewContext.putImageData(getYViewSlice(mRISlice.volume, yCoor, mRISlice.size) ,0,0);
+    yViewContext.putImageData(mRISlice.getYViewSlice(yCoor) ,0,0);
     zViewContext.putImageData(mRISlice.getZViewSlice(xCoor) ,0,0);
 }
 
