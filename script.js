@@ -14,24 +14,24 @@ function setUp3ViewPorts() {
     const zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(mRISlice.canvases.x);
 
-    mRISlice.canvases.z.addEventListener('click', updateZView);
+    mRISlice.canvases.z.addEventListener('click', updateCanvases);
     mRISlice.canvases.z.addEventListener('mousemove', event => {
         if(mouseDown) {
-            updateZView(event);
+            updateCanvases(event);
         }
     });
     
-    mRISlice.canvases.y.addEventListener('click', updateYView);
+    mRISlice.canvases.y.addEventListener('click', updateCanvases);
     mRISlice.canvases.y.addEventListener('mousemove', event => {
         if(mouseDown) {
-            updateYView(event);
+            updateCanvases(event);
         }
     });
     
-    mRISlice.canvases.x.addEventListener('click', updateXView);
+    mRISlice.canvases.x.addEventListener('click', updateCanvases);
     mRISlice.canvases.x.addEventListener('mousemove', event => {
         if(mouseDown) {
-            updateXView(event);
+            updateCanvases(event);
         }
     });
 }
@@ -40,25 +40,51 @@ let mouseDown = false;
 document.body.addEventListener('mousedown', event => mouseDown = true);
 document.body.addEventListener('mouseup', event => mouseDown = false);
 
-function updateZView(event) {
-    const xCoor = event.x - mRISlice.canvases.z.offsetLeft + document.documentElement.scrollLeft;
-    const yCoor = event.y - mRISlice.canvases.z.offsetTop + document.documentElement.scrollTop;
-    mRISlice.contexts.x.putImageData(mRISlice.getXViewSlice(xCoor) ,0,0);
-    mRISlice.contexts.y.putImageData(mRISlice.getYViewSlice(yCoor) ,0,0);
-}
+function updateCanvases(event) {
+    const horizontalCoor = event.x - event.target.offsetLeft; + document.documentElement.scrollLeft;
+    const verticalCoor = event.y - event.target.offsetTop + document.documentElement.scrollTop;
 
-function updateYView(event) {
-    const xCoor = event.pageX - mRISlice.canvases.y.offsetLeft;
-    const yCoor = mRISlice.size.z - (event.pageY - mRISlice.canvases.y.offsetTop);
-    mRISlice.contexts.x.putImageData(mRISlice.getXViewSlice(xCoor) ,0,0);
-    mRISlice.contexts.z.putImageData(mRISlice.getZViewSlice(yCoor) ,0,0);
-}
+    const isXCanvas = event.target == mRISlice.canvases.x
+    const isYCanvas = event.target == mRISlice.canvases.y
+    const isZCanvas = event.target == mRISlice.canvases.z
 
-function updateXView(event) {
-    const xCoor = event.pageX - mRISlice.canvases.x.offsetLeft + document.documentElement.scrollLeft;
-    const yCoor = event.pageY - mRISlice.canvases.x.offsetTop + document.documentElement.scrollTop;
-    mRISlice.contexts.y.putImageData(mRISlice.getYViewSlice(yCoor) ,0,0);
-    mRISlice.contexts.z.putImageData(mRISlice.getZViewSlice(xCoor) ,0,0);
+    if(isXCanvas) {
+        const yViewNeedsUpdating = verticalCoor !== mRISlice.currentView.y;
+        const zViewNeedsUpdating = horizontalCoor !== mRISlice.currentView.z;
+        
+        if(yViewNeedsUpdating) {
+            mRISlice.currentView.y = verticalCoor;
+            mRISlice.contexts.y.putImageData(mRISlice.getYViewSlice(verticalCoor) ,0,0);
+        }
+        if(zViewNeedsUpdating) {
+            mRISlice.currentView.z = horizontalCoor;
+            mRISlice.contexts.z.putImageData(mRISlice.getZViewSlice(horizontalCoor) ,0,0);
+        }
+    } else if (isYCanvas){
+        const xViewNeedsUpdating = horizontalCoor !== mRISlice.currentView.x;
+        const zViewNeedsUpdating = verticalCoor !== mRISlice.currentView.z;
+        
+        if(xViewNeedsUpdating) {
+            mRISlice.currentView.x = horizontalCoor;
+            mRISlice.contexts.x.putImageData(mRISlice.getXViewSlice(horizontalCoor) ,0,0);
+        }
+        if(zViewNeedsUpdating) {
+            mRISlice.currentView.z = verticalCoor;
+            mRISlice.contexts.z.putImageData(mRISlice.getZViewSlice(mRISlice.size.z - verticalCoor) ,0,0);
+        }
+    } else {
+        const xViewNeedsUpdating = horizontalCoor !== mRISlice.currentView.x;
+        const yViewNeedsUpdating = verticalCoor !== mRISlice.currentView.y;
+        
+        if(xViewNeedsUpdating) {
+            mRISlice.currentView.x = horizontalCoor;
+            mRISlice.contexts.x.putImageData(mRISlice.getXViewSlice(horizontalCoor) ,0,0);
+        }
+        if(yViewNeedsUpdating) {
+            mRISlice.currentView.y = verticalCoor;
+            mRISlice.contexts.y.putImageData(mRISlice.getYViewSlice(verticalCoor) ,0,0);
+        }
+    }
 }
 
 document.getElementById('file-input').onchange = function (event) {
