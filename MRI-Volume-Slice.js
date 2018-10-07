@@ -2,7 +2,7 @@
 
 class MRISlice {
     constructor(nifti) {
-      this._setupCanvases();
+      this._createCanvases();
       this.loadNewNifti(nifti);
     }
     
@@ -65,7 +65,7 @@ class MRISlice {
       return  [x, y, z];
     }
 
-    _setupCanvases() {
+    _createCanvases() {
       this.canvases = {
         x: document.createElement("canvas"),
         y: document.createElement("canvas"),
