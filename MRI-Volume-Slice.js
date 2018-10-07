@@ -15,42 +15,43 @@ class MRISlice {
 
     getZViewSlice(slice) {
       const sliceIndex = this._get1DIndex(0,0,slice);
-      const sliceRGBA = this.volume
-          .slice(sliceIndex, sliceIndex + this.size.x * this.size.y)
-          .reduce(this._grayScaleToRGB,[]);
-      return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.x, this.size.y);
+      const sliceLength = this.size.x * this.size.y;
+      const sliceXY = this.volume.slice(sliceIndex, sliceIndex + sliceLength);
+      return this._grayScaleToRGBA(sliceXY, this.size.x, this.size.y);
     }
 
     getYViewSlice(slice) {
-      let sliceRGBA = [];
+      let sliceXZ = [];
+      const rowLength = this.size.x;
       for(let zIndex=this.size.z-1; zIndex >= 0; zIndex--) {
           const rowIndex = this._get1DIndex(0,slice,zIndex);
-          sliceRGBA.push(...this.volume.slice(rowIndex, rowIndex + this.size.x));
+          sliceXZ.push(...this.volume.slice(rowIndex, rowIndex + rowLength));
       }
-      sliceRGBA = sliceRGBA.reduce(this._grayScaleToRGB,[]);
-      return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.x, this.size.z);
+      return this._grayScaleToRGBA(sliceXZ, this.size.x, this.size.z);
     }
 
     getXViewSlice(slice) {
-      let sliceRGBA = [];
+      let sliceYZ = [];
       // The order of these nested loops is important
       for(let yIndex=0; yIndex < this.size.y; yIndex++) {
           for(let zIndex=0; zIndex < this.size.z; zIndex++) {
-              sliceRGBA.push(this.volume[this._get1DIndex(slice,yIndex,zIndex)]);
+              sliceYZ.push(this.volume[this._get1DIndex(slice,yIndex,zIndex)]);
           }
       }
-      sliceRGBA = sliceRGBA.reduce(this._grayScaleToRGB,[]);
-      return new ImageData(new Uint8ClampedArray(sliceRGBA),this.size.z, this.size.y);
+      return this._grayScaleToRGBA(sliceYZ, this.size.z, this.size.y);
+    }
+
+    _grayScaleToRGBA(sliceData, width, height) {
+      const rGBASliceData = sliceData.reduce((accumulate, colourChannels) => {
+        const alpha = 255;
+        accumulate.push(colourChannels, colourChannels, colourChannels, alpha);
+        return accumulate;
+      },[]);
+      return new ImageData(new Uint8ClampedArray(rGBASliceData), width, height);
     }
 
     _get1DIndex(x,y,z) {
       return  x + y*this.size.x + z*this.size.x*this.size.y;
-    }
-
-    _grayScaleToRGB(accumulate, RGandB) {
-      const alpha = 255;
-      accumulate.push(RGandB, RGandB, RGandB, alpha);
-      return accumulate;
     }
 
     _get3DIndex(index,size) {
