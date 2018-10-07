@@ -1,5 +1,4 @@
 
-
 class MRISlice {
     constructor(nifti) {
       this._createCanvases();
@@ -85,6 +84,10 @@ class MRISlice {
       this.canvases.y.height = size.z
       this.canvases.z.width = size.x
       this.canvases.z.height = size.y
+
+      this.contexts.x.putImageData(this.getXViewSlice(this.currentView.x) ,0 ,0);
+      this.contexts.y.putImageData(this.getYViewSlice(this.currentView.y) ,0 ,0);
+      this.contexts.z.putImageData(this.getZViewSlice(this.currentView.z) ,0 ,0);
     }
 
     _setupNifti(nifti) {
@@ -94,6 +97,13 @@ class MRISlice {
         x: nifti.sizes[0],
         y: nifti.sizes[1],
         z: nifti.sizes[2],
+      };
+      
+      const midAxis = nifti.sizes.map(size => Math.round(size/2));
+      this.currentView = {
+        x: midAxis[0],
+        y: midAxis[1],
+        z: midAxis[2],
       };
 
       const theMax = nifti.data.reduce((accumulate, item) => {

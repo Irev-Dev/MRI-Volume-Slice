@@ -5,15 +5,12 @@ const mRISlice = new MRISlice();
 
 function setUp3ViewPorts() {
 
-    mRISlice.contexts.z.putImageData(mRISlice.getZViewSlice(Math.round(mRISlice.size.z/2)) ,0,0);
     const xDiv = document.getElementById('z-view-wrapper');
     xDiv.appendChild(mRISlice.canvases.z);
 
-    mRISlice.contexts.y.putImageData(mRISlice.getYViewSlice(Math.round(mRISlice.size.y/2)) ,0,0);
     const yDiv = document.getElementById('y-view-wrapper');
     yDiv.appendChild(mRISlice.canvases.y);
 
-    mRISlice.contexts.x.putImageData(mRISlice.getXViewSlice(Math.round(mRISlice.size.x/2)) ,0,0);
     const zDiv = document.getElementById('x-view-wrapper');
     zDiv.appendChild(mRISlice.canvases.x);
 
