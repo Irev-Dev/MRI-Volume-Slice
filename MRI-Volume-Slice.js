@@ -2,42 +2,15 @@
 
 class MRISlice {
     constructor(nifti) {
-      this.nifti = nifti;
-
-      this.size = {
-        x: nifti.sizes[0],
-        y: nifti.sizes[1],
-        z: nifti.sizes[2],
-      };
-
-      this.canvases = {
-        x: document.createElement("canvas"),
-        y: document.createElement("canvas"),
-        z: document.createElement("canvas"),
-      };
-      this.contexts = {
-        x: this.canvases.x.getContext('2d'),
-        y: this.canvases.y.getContext('2d'),
-        z: this.canvases.z.getContext('2d'),
+      this._setupCanvases();
+      this.loadNewNifti(nifti);
+    }
+    
+    loadNewNifti(nifti) {
+      if(nifti) {
+        this._setupNifti(nifti);
+        this._setCanvasWidthHeight(this.size);
       }
-      this.canvases.x.width = this.size.z
-      this.canvases.x.height = this.size.y
-      this.canvases.y.width = this.size.x
-      this.canvases.y.height = this.size.z
-      this.canvases.z.width = this.size.x
-      this.canvases.z.height = this.size.y
-      
-      const theMax = nifti.data.reduce((accumulate, item) => {
-        accumulate = item > accumulate ? item : accumulate;
-        return accumulate;
-      }, 0);
-      
-      const theMin = nifti.data.reduce((accumulate, item) => {
-          accumulate = item < accumulate ? item : accumulate;
-          return accumulate;
-      }, 0);
-      
-      this.volume = nifti.data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
     }
 
     getZViewSlice(slice) {
@@ -91,6 +64,49 @@ class MRISlice {
       return  [x, y, z];
     }
 
+    _setupCanvases() {
+      this.canvases = {
+        x: document.createElement("canvas"),
+        y: document.createElement("canvas"),
+        z: document.createElement("canvas"),
+      };
+      this.contexts = {
+        x: this.canvases.x.getContext('2d'),
+        y: this.canvases.y.getContext('2d'),
+        z: this.canvases.z.getContext('2d'),
+      }
+    }
+
+    _setCanvasWidthHeight(size) {
+      this.canvases.x.width = size.z
+      this.canvases.x.height = size.y
+      this.canvases.y.width = size.x
+      this.canvases.y.height = size.z
+      this.canvases.z.width = size.x
+      this.canvases.z.height = size.y
+    }
+
+    _setupNifti(nifti) {
+      this.nifti = nifti;
+
+      this.size = {
+        x: nifti.sizes[0],
+        y: nifti.sizes[1],
+        z: nifti.sizes[2],
+      };
+
+      const theMax = nifti.data.reduce((accumulate, item) => {
+        accumulate = item > accumulate ? item : accumulate;
+        return accumulate;
+      }, 0);
+
+      const theMin = nifti.data.reduce((accumulate, item) => {
+          accumulate = item < accumulate ? item : accumulate;
+          return accumulate;
+      }, 0);
+
+      this.volume = nifti.data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
+    }
 }
 
 export default MRISlice;

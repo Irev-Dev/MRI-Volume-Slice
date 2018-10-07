@@ -1,8 +1,7 @@
-const nifti = require('nifti-js');
-// const MRISlice = require('./MRI-Volume-Slice');
+import nifti from 'nifti-js';
 import MRISlice from './MRI-Volume-Slice';
 
-let mRISlice;
+const mRISlice = new MRISlice();
 
 function setUp3ViewPorts() {
 
@@ -68,7 +67,7 @@ function updateXView(event) {
 document.getElementById('file-input').onchange = function (event) {
     const fr = new FileReader();
     fr.onload = () => {
-        mRISlice = new MRISlice(nifti.parse(fr.result));
+        mRISlice.loadNewNifti(nifti.parse(fr.result));
         setUp3ViewPorts();
     }
     fr.readAsArrayBuffer(event.target.files[0]);
