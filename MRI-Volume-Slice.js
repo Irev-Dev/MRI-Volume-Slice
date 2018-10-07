@@ -119,6 +119,37 @@ class MRISlice {
       this.volume = nifti.data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
     }
 
+    mouseNavigationEnabled(isEnabled) {
+      if(isEnabled) {
+        this.mouseDown = false;
+        document.body.addEventListener('mousedown', event => this.mouseDown = true);
+        document.body.addEventListener('mouseup', event => this.mouseDown = false);
+
+        this.canvases.z.addEventListener('click', this.updateCanvases);
+        this.canvases.z.addEventListener('mousemove', event => {
+          if(this.mouseDown) {
+            this.updateCanvases(event);
+          }
+        });
+        
+        this.canvases.y.addEventListener('click', this.updateCanvases);
+        this.canvases.y.addEventListener('mousemove', event => {
+          if(this.mouseDown) {
+            this.updateCanvases(event);
+          }
+        });
+        
+        this.canvases.x.addEventListener('click', this.updateCanvases);
+        this.canvases.x.addEventListener('mousemove', event => {
+          if(this.mouseDown) {
+            this.updateCanvases(event);
+          }
+        });
+      } else {
+        //TODO remove event listeners if 
+      }
+    }
+    
     updateCanvases(event) {
       const horizontalCoor = event.x - event.target.offsetLeft; + document.documentElement.scrollLeft;
       const verticalCoor = event.y - event.target.offsetTop + document.documentElement.scrollTop;
