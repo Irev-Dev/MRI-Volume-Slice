@@ -118,6 +118,53 @@ class MRISlice {
 
       this.volume = nifti.data.map(item => Math.round((item-theMin)*255/(theMax-theMin)));
     }
+
+    updateCanvases(event) {
+      const horizontalCoor = event.x - event.target.offsetLeft; + document.documentElement.scrollLeft;
+      const verticalCoor = event.y - event.target.offsetTop + document.documentElement.scrollTop;
+  
+      const isXCanvas = event.target == this.canvases.x
+      const isYCanvas = event.target == this.canvases.y
+      const isZCanvas = event.target == this.canvases.z
+  
+      if(isXCanvas) {
+          const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
+          const zViewNeedsUpdating = horizontalCoor !== this.currentView.z;
+          
+          if(yViewNeedsUpdating) {
+              this.currentView.y = verticalCoor;
+              this.contexts.y.putImageData(this.getYViewSlice(verticalCoor) ,0,0);
+          }
+          if(zViewNeedsUpdating) {
+              this.currentView.z = horizontalCoor;
+              this.contexts.z.putImageData(this.getZViewSlice(horizontalCoor) ,0,0);
+          }
+      } else if (isYCanvas){
+          const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
+          const zViewNeedsUpdating = verticalCoor !== this.currentView.z;
+          
+          if(xViewNeedsUpdating) {
+              this.currentView.x = horizontalCoor;
+              this.contexts.x.putImageData(this.getXViewSlice(horizontalCoor) ,0,0);
+          }
+          if(zViewNeedsUpdating) {
+              this.currentView.z = verticalCoor;
+              this.contexts.z.putImageData(this.getZViewSlice(this.size.z - verticalCoor) ,0,0);
+          }
+      } else {
+          const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
+          const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
+          
+          if(xViewNeedsUpdating) {
+              this.currentView.x = horizontalCoor;
+              this.contexts.x.putImageData(this.getXViewSlice(horizontalCoor) ,0,0);
+          }
+          if(yViewNeedsUpdating) {
+              this.currentView.y = verticalCoor;
+              this.contexts.y.putImageData(this.getYViewSlice(verticalCoor) ,0,0);
+          }
+      }
+  }
 }
 
 export default MRISlice;
