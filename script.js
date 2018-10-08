@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import nifti from 'nifti-js';
 import MRISlice from './MRI-Volume-Slice';
 import niftiData from './data/sub-study002_ses-after_anat_sub-study002_ses-after_T1w.nii';
@@ -24,7 +25,7 @@ document.getElementById('file-input').onchange = function (event) {
 };
 
 document.getElementById('toggle-cross-hairs').onchange = function (event) {
-    if(event.checked) {
+    if(event.target.checked) {
         mRISlice.showCrosshairs();
     }else{
         mRISlice.hideCrossHairs();

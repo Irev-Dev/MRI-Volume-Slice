@@ -4,6 +4,7 @@ class MRISlice {
       this._createCanvases();
       this.loadNewNifti(nifti);
       this.useCrosshairs = true;
+      this.lastEvent = null;
     }
 
     loadNewNifti(nifti) {
@@ -156,12 +157,13 @@ class MRISlice {
     }
 
     updateCanvases(event) {
+        this.lastEvent = event;
       const horizontalCoor = event.x - event.target.offsetLeft; + document.documentElement.scrollLeft;
       const verticalCoor = event.y - event.target.offsetTop + document.documentElement.scrollTop;
 
-      const isXCanvas = event.target == this.canvases.x
-      const isYCanvas = event.target == this.canvases.y
-      const isZCanvas = event.target == this.canvases.z
+      const isXCanvas = event.target === this.canvases.x
+      const isYCanvas = event.target === this.canvases.y
+      const isZCanvas = event.target === this.canvases.z
 
       if(isXCanvas) {
           const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
@@ -210,29 +212,33 @@ class MRISlice {
 
     showCrosshairs(){
         this.useCrosshairs = true;
+        if(this.lastEvent){
+            this.updateCanvases(this.lastEvent);
+        }
     }
 
     hideCrossHairs(){
         this.useCrosshairs = false;
+        if(this.lastEvent){
+            this.updateCanvases(this.lastEvent);
+        }
     }
 
     _drawCrossHairs(contexts, viewCoors) {
-        if(this.useCrosshairs) {
-            contexts.z.fillStyle = 'yellow';
-            contexts.y.fillStyle = 'yellow';
+            contexts.z.fillStyle = this.useCrosshairs ? 'yellow' : "rgba(255, 255, 255, 0)";
+            contexts.y.fillStyle = this.useCrosshairs ? 'yellow' : "rgba(255, 255, 255, 0)";
             contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
             contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
 
-            contexts.z.fillStyle = 'cyan';
-            contexts.x.fillStyle = 'cyan';
+            contexts.z.fillStyle = this.useCrosshairs ? 'cyan' : "rgba(255, 255, 255, 0)";
+            contexts.x.fillStyle = this.useCrosshairs ? 'cyan' : "rgba(255, 255, 255, 0)";
             contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
             contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
 
-            contexts.x.fillStyle = 'purple';
-            contexts.y.fillStyle = 'purple';
+            contexts.x.fillStyle = this.useCrosshairs ? 'purple' : "rgba(255, 255, 255, 0)";
+            contexts.y.fillStyle = this.useCrosshairs ? 'purple' : "rgba(255, 255, 255, 0)";
             contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
             contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
-        }
     }
 }
 
