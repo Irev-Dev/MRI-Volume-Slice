@@ -125,21 +125,21 @@ class MRISlice {
         document.body.addEventListener('mousedown', event => this.mouseDown = true);
         document.body.addEventListener('mouseup', event => this.mouseDown = false);
 
-        this.canvases.z.addEventListener('click', this.updateCanvases);
+        this.canvases.z.addEventListener('click', event => this.updateCanvases(event));
         this.canvases.z.addEventListener('mousemove', event => {
           if(this.mouseDown) {
             this.updateCanvases(event);
           }
         });
         
-        this.canvases.y.addEventListener('click', this.updateCanvases);
+        this.canvases.y.addEventListener('click', event => this.updateCanvases(event));
         this.canvases.y.addEventListener('mousemove', event => {
           if(this.mouseDown) {
             this.updateCanvases(event);
           }
         });
         
-        this.canvases.x.addEventListener('click', this.updateCanvases);
+        this.canvases.x.addEventListener('click', event => this.updateCanvases(event));
         this.canvases.x.addEventListener('mousemove', event => {
           if(this.mouseDown) {
             this.updateCanvases(event);
