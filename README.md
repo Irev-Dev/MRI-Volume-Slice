@@ -2,7 +2,7 @@
 
 A 3 axis viewer or 3d volumes right in the broswer. Currently supports loading in Nifti (.nii) files. When you click and drag on any of the 3 axis, the other two axis update to display a slice at the coordinates of the mouse.
 
-![3 view MRI display](https://res.cloudinary.com/irevdev/image/upload/v1539009277/MRI-Volume-Slice/fMRIexample2.gif "3 view MRI display)
+![3 view MRI display](https://res.cloudinary.com/irevdev/image/upload/v1539009277/MRI-Volume-Slice/fMRIexample2.gif "3 view MRI display")
 
 This kind of three axis viewer is common in neuro science, but in the spirit of accessibility, open-source and open-science; here is an open-source viewer on the universal platform (the web browser).
 
