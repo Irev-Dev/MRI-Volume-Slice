@@ -23,6 +23,14 @@ document.getElementById('file-input').onchange = function (event) {
     fr.readAsArrayBuffer(event.target.files[0]);
 };
 
+document.getElementById('toggle-cross-hairs').onchange = function (event) {
+    if(event.checked) {
+        mRISlice.showCrosshairs();
+    }else{
+        mRISlice.hideCrossHairs();
+    }
+};
+
 function setupNifti(event) {
     mRISlice.loadNewNifti(nifti.parse(event.target.result));
     mRISlice.mouseNavigationEnabled('enable please')
@@ -31,7 +39,7 @@ function setupNifti(event) {
 async function loadDefaultData(niftiData) {
     const response = await fetch(niftiData);
     const blob = await response.blob();
-    
+
     const fr = new FileReader();
     fr.onload = setupNifti;
     fr.readAsArrayBuffer(blob);

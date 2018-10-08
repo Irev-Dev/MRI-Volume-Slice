@@ -3,8 +3,9 @@ class MRISlice {
     constructor(nifti) {
       this._createCanvases();
       this.loadNewNifti(nifti);
+      this.useCrosshairs = true;
     }
-    
+
     loadNewNifti(nifti) {
       if(nifti) {
         this._setupNifti(nifti);
@@ -56,11 +57,11 @@ class MRISlice {
     _get3DIndex(index,size) {
       const zChunkLength = size.x*size.y;
       const yChunkLength = size.y;
-      
+
       const z = Math.floor(index / zChunkLength);
       const y = Math.floor((index - z) / yChunkLength);
       const x = index - z - y;
-  
+
       return  [x, y, z];
     }
 
@@ -102,7 +103,7 @@ class MRISlice {
         y: nifti.sizes[1],
         z: nifti.sizes[2],
       };
-      
+
       const midAxis = nifti.sizes.map(size => Math.round(size/2));
       this.currentView = {
         x: midAxis[0],
@@ -135,14 +136,14 @@ class MRISlice {
             this.updateCanvases(event);
           }
         });
-        
+
         this.canvases.y.addEventListener('click', event => this.updateCanvases(event));
         this.canvases.y.addEventListener('mousemove', event => {
           if(this.mouseDown) {
             this.updateCanvases(event);
           }
         });
-        
+
         this.canvases.x.addEventListener('click', event => this.updateCanvases(event));
         this.canvases.x.addEventListener('mousemove', event => {
           if(this.mouseDown) {
@@ -150,22 +151,22 @@ class MRISlice {
           }
         });
       } else {
-        //TODO remove event listeners if 
+        //TODO remove event listeners if
       }
     }
-    
+
     updateCanvases(event) {
       const horizontalCoor = event.x - event.target.offsetLeft; + document.documentElement.scrollLeft;
       const verticalCoor = event.y - event.target.offsetTop + document.documentElement.scrollTop;
-  
+
       const isXCanvas = event.target == this.canvases.x
       const isYCanvas = event.target == this.canvases.y
       const isZCanvas = event.target == this.canvases.z
-  
+
       if(isXCanvas) {
           const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
           const zViewNeedsUpdating = horizontalCoor !== this.currentView.z;
-          
+
           if(yViewNeedsUpdating) {
               this.currentView.y = verticalCoor;
               this.currentYImageData = this.getYViewSlice(verticalCoor);
@@ -177,7 +178,7 @@ class MRISlice {
       } else if (isYCanvas){
           const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
           const zViewNeedsUpdating = verticalCoor !== this.currentView.z;
-          
+
           if(xViewNeedsUpdating) {
               this.currentView.x = horizontalCoor;
               this.currentXImageData = this.getXViewSlice(horizontalCoor);
@@ -189,7 +190,7 @@ class MRISlice {
       } else {
           const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
           const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
-          
+
           if(xViewNeedsUpdating) {
               this.currentView.x = horizontalCoor;
               this.currentXImageData = this.getXViewSlice(horizontalCoor);
@@ -203,25 +204,35 @@ class MRISlice {
         this.contexts.x.putImageData(this.currentXImageData ,0 ,0);
         this.contexts.y.putImageData(this.currentYImageData ,0 ,0);
         this.contexts.z.putImageData(this.currentZImageData ,0 ,0);
-        
+
         this._drawCrossHairs(this.contexts, this.currentView);
     }
 
+    showCrosshairs(){
+        this.useCrosshairs = true;
+    }
+
+    hideCrossHairs(){
+        this.useCrosshairs = false;
+    }
+
     _drawCrossHairs(contexts, viewCoors) {
-      contexts.z.fillStyle = 'yellow';
-      contexts.y.fillStyle = 'yellow';
-      contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
-      contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
-      
-      contexts.z.fillStyle = 'cyan';
-      contexts.x.fillStyle = 'cyan';
-      contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
-      contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
-      
-      contexts.x.fillStyle = 'purple';
-      contexts.y.fillStyle = 'purple';
-      contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
-      contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
+        if(this.useCrosshairs) {
+            contexts.z.fillStyle = 'yellow';
+            contexts.y.fillStyle = 'yellow';
+            contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
+            contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
+
+            contexts.z.fillStyle = 'cyan';
+            contexts.x.fillStyle = 'cyan';
+            contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
+            contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
+
+            contexts.x.fillStyle = 'purple';
+            contexts.y.fillStyle = 'purple';
+            contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
+            contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
+        }
     }
 }
 
