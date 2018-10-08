@@ -85,9 +85,13 @@ class MRISlice {
       this.canvases.z.width = size.x
       this.canvases.z.height = size.y
 
-      this.contexts.x.putImageData(this.getXViewSlice(this.currentView.x) ,0 ,0);
-      this.contexts.y.putImageData(this.getYViewSlice(this.currentView.y) ,0 ,0);
-      this.contexts.z.putImageData(this.getZViewSlice(this.currentView.z) ,0 ,0);
+      this.currentXImageData = this.getXViewSlice(this.currentView.x);
+      this.currentYImageData = this.getYViewSlice(this.currentView.y);
+      this.currentZImageData = this.getZViewSlice(this.currentView.z);
+
+      this.contexts.x.putImageData(this.currentXImageData ,0 ,0);
+      this.contexts.y.putImageData(this.currentYImageData ,0 ,0);
+      this.contexts.z.putImageData(this.currentZImageData ,0 ,0);
     }
 
     _setupNifti(nifti) {
@@ -164,11 +168,11 @@ class MRISlice {
           
           if(yViewNeedsUpdating) {
               this.currentView.y = verticalCoor;
-              this.contexts.y.putImageData(this.getYViewSlice(verticalCoor) ,0,0);
+              this.currentYImageData = this.getYViewSlice(verticalCoor);
           }
           if(zViewNeedsUpdating) {
               this.currentView.z = horizontalCoor;
-              this.contexts.z.putImageData(this.getZViewSlice(horizontalCoor) ,0,0);
+              this.currentZImageData = this.getZViewSlice(horizontalCoor);
           }
       } else if (isYCanvas){
           const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
@@ -176,11 +180,11 @@ class MRISlice {
           
           if(xViewNeedsUpdating) {
               this.currentView.x = horizontalCoor;
-              this.contexts.x.putImageData(this.getXViewSlice(horizontalCoor) ,0,0);
+              this.currentXImageData = this.getXViewSlice(horizontalCoor);
           }
           if(zViewNeedsUpdating) {
-              this.currentView.z = verticalCoor;
-              this.contexts.z.putImageData(this.getZViewSlice(this.size.z - verticalCoor) ,0,0);
+              this.currentView.z = this.size.z - verticalCoor;
+              this.currentZImageData = this.getZViewSlice(this.size.z - verticalCoor);
           }
       } else {
           const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
@@ -188,14 +192,37 @@ class MRISlice {
           
           if(xViewNeedsUpdating) {
               this.currentView.x = horizontalCoor;
-              this.contexts.x.putImageData(this.getXViewSlice(horizontalCoor) ,0,0);
+              this.currentXImageData = this.getXViewSlice(horizontalCoor);
           }
           if(yViewNeedsUpdating) {
               this.currentView.y = verticalCoor;
-              this.contexts.y.putImageData(this.getYViewSlice(verticalCoor) ,0,0);
+              this.currentYImageData = this.getYViewSlice(verticalCoor);
           }
       }
-  }
+
+        this.contexts.x.putImageData(this.currentXImageData ,0 ,0);
+        this.contexts.y.putImageData(this.currentYImageData ,0 ,0);
+        this.contexts.z.putImageData(this.currentZImageData ,0 ,0);
+        
+        this._drawCrossHairs(this.contexts, this.currentView);
+    }
+
+    _drawCrossHairs(contexts, viewCoors) {
+      contexts.z.fillStyle = 'yellow';
+      contexts.y.fillStyle = 'yellow';
+      contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
+      contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
+      
+      contexts.z.fillStyle = 'cyan';
+      contexts.x.fillStyle = 'cyan';
+      contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
+      contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
+      
+      contexts.x.fillStyle = 'purple';
+      contexts.y.fillStyle = 'purple';
+      contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
+      contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
+    }
 }
 
 export default MRISlice;
