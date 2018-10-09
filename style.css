@@ -69,13 +69,13 @@ h1 {
     display: block;
     height: 30px;
     width: 30px;
-    border: 1px solid #ff686b;
+    border: 1px solid #af4c4c;
     border-radius: 50%;
     position: absolute;
     top: -6px;
     left: -75px;
     transition: all 0.3s ease-in;
-    background: #ff686b;
+    background: #af4c4c;
 }
 .toggle input[type="checkbox"]:checked + label::after {
     left: -40px;
