@@ -5,6 +5,7 @@ class MRISlice {
       this.loadNewNifti(nifti);
       this.useCrosshairs = true;
       this.lastEvent = null;
+      this.scrollDistance = 2;
     }
 
     loadNewNifti(nifti) {
@@ -151,14 +152,40 @@ class MRISlice {
             this.updateCanvases(event);
           }
         });
+
+        [this.canvases.x, this.canvases.y, this.canvases.z]
+        .forEach((canvas) => {
+          canvas.addEventListener('wheel', (event) => {
+            const fakeEvent = {
+              target: this.lastEvent.target,
+              x: this.lastEvent.x,
+              y: this.lastEvent.y
+            }
+
+            if (event.deltaY > 0) {
+              // scrolling down
+              fakeEvent.y += this.scrollDistance;
+            } else if (event.deltaY < 0) {
+              // scrolling up
+              fakeEvent.y -= this.scrollDistance;
+            } else if (event.deltaX > 0) {
+              // scrolling right
+              fakeEvent.x += this.scrollDistance;
+            } else if (event.deltaX < 0) {
+              // scrolling left
+              fakeEvent.x -= this.scrollDistance;
+            }
+            this.updateCanvases(fakeEvent);
+          })
+        });
       } else {
         //TODO remove event listeners if
       }
     }
 
     updateCanvases(event) {
-        this.lastEvent = event;
-      const horizontalCoor = event.x - event.target.offsetLeft; + document.documentElement.scrollLeft;
+      this.lastEvent = event;
+      const horizontalCoor = event.x - event.target.offsetLeft;
       const verticalCoor = event.y - event.target.offsetTop + document.documentElement.scrollTop;
 
       const isXCanvas = event.target === this.canvases.x
