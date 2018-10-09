@@ -16,6 +16,7 @@
     "parcel-bundler": "^1.9.7"
   },
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "file-system": "^2.2.2",
     "fs": "0.0.1-security",
     "fs-extra": "^7.0.0",
