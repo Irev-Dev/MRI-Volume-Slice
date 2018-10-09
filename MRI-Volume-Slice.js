@@ -225,18 +225,23 @@ class MRISlice {
     }
 
     _drawCrossHairs(contexts, viewCoors) {
-            contexts.z.fillStyle = this.useCrosshairs ? 'yellow' : "rgba(255, 255, 255, 0)";
-            contexts.y.fillStyle = this.useCrosshairs ? 'yellow' : "rgba(255, 255, 255, 0)";
+            const transparent = 'rgba(255, 255, 255, 0';
+            const xHairColor = 'yellow';
+            const yHairColor = 'cyan';
+            const zHairColor = 'purple';
+
+            contexts.z.fillStyle = this.useCrosshairs ? xHairColor : transparent;
+            contexts.y.fillStyle = this.useCrosshairs ? xHairColor : transparent;
             contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
             contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
 
-            contexts.z.fillStyle = this.useCrosshairs ? 'cyan' : "rgba(255, 255, 255, 0)";
-            contexts.x.fillStyle = this.useCrosshairs ? 'cyan' : "rgba(255, 255, 255, 0)";
+            contexts.z.fillStyle = this.useCrosshairs ? yHairColor : transparent;
+            contexts.x.fillStyle = this.useCrosshairs ? yHairColor : transparent;
             contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
             contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
 
-            contexts.x.fillStyle = this.useCrosshairs ? 'purple' : "rgba(255, 255, 255, 0)";
-            contexts.y.fillStyle = this.useCrosshairs ? 'purple' : "rgba(255, 255, 255, 0)";
+            contexts.x.fillStyle = this.useCrosshairs ? zHairColor : transparent;
+            contexts.y.fillStyle = this.useCrosshairs ? zHairColor : transparent;
             contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
             contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
     }
