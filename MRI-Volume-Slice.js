@@ -12,6 +12,7 @@ class MRISlice {
       if(nifti) {
         this._setupNifti(nifti);
         this._setCanvasWidthHeight(this.size);
+        this._drawCrossHairs(this.contexts, this.currentView);
       }
     }
 
@@ -230,28 +231,24 @@ class MRISlice {
           }
       }
 
-        this.contexts.x.putImageData(this.currentXImageData ,0 ,0);
-        this.contexts.y.putImageData(this.currentYImageData ,0 ,0);
-        this.contexts.z.putImageData(this.currentZImageData ,0 ,0);
-
         this._drawCrossHairs(this.contexts, this.currentView);
     }
 
     showCrosshairs(){
         this.useCrosshairs = true;
-        if(this.lastEvent){
-            this.updateCanvases(this.lastEvent);
-        }
+        this._drawCrossHairs(this.contexts, this.currentView);
     }
 
     hideCrossHairs(){
         this.useCrosshairs = false;
-        if(this.lastEvent){
-            this.updateCanvases(this.lastEvent);
-        }
+        this._drawCrossHairs(this.contexts, this.currentView);
     }
 
     _drawCrossHairs(contexts, viewCoors) {
+        this.contexts.x.putImageData(this.currentXImageData ,0 ,0);
+        this.contexts.y.putImageData(this.currentYImageData ,0 ,0);
+        this.contexts.z.putImageData(this.currentZImageData ,0 ,0);
+
             const transparent = 'rgba(255, 255, 255, 0';
             const xHairColor = 'yellow';
             const yHairColor = 'cyan';
