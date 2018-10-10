@@ -55,9 +55,9 @@ function addListeners(divs) {
 }
 
 function enableBodyScroll(e) {
-    document.querySelector('body').style.overflowY = "auto";
+    document.querySelector('body').style.position = "relative";
 }
 
 function disableBodyScroll(e) {
-    document.querySelector('body').style.overflowY = "hidden";
+    document.querySelector('body').style.position = "fixed";
 }
