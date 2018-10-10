@@ -13,41 +13,41 @@ loadDefaultData();
 appendCanvasesToHTML();
 
 function appendCanvasesToHTML() {
-    xDiv.appendChild(mRISlice.canvases.z);
-    yDiv.appendChild(mRISlice.canvases.y);
-    zDiv.appendChild(mRISlice.canvases.x);
+  xDiv.appendChild(mRISlice.canvases.z);
+  yDiv.appendChild(mRISlice.canvases.y);
+  zDiv.appendChild(mRISlice.canvases.x);
 }
 
 document.getElementById('file-input').onchange = function (event) {
-    const fr = new FileReader();
-    fr.onload = (event) => setupNifti(event.target.result);
-    fr.readAsArrayBuffer(event.target.files[0]);
+  const fr = new FileReader();
+  fr.onload = event => setupNifti(event.target.result);
+  fr.readAsArrayBuffer(event.target.files[0]);
 };
 
 document.getElementById('toggle-cross-hairs').onchange = function (event) {
-    if(event.target.checked) {
-        mRISlice.showCrosshairs();
-    }else{
-        mRISlice.hideCrossHairs();
-    }
+  if (event.target.checked) {
+    mRISlice.showCrosshairs();
+  } else {
+    mRISlice.hideCrossHairs();
+  }
 };
 
-document.querySelectorAll('canvas').forEach(function(canvas) {
-    canvas.onwheel = function(event) {
-        event.preventDefault();
-    }
+document.querySelectorAll('canvas').forEach((canvas) => {
+  canvas.onwheel = function (event) {
+    event.preventDefault();
+  };
 });
 
 function setupNifti(file) {
-    mRISlice.loadNewNifti(nifti.parse(file));
-    mRISlice.mouseNavigationEnabled('enable please')
+  mRISlice.loadNewNifti(nifti.parse(file));
+  mRISlice.mouseNavigationEnabled('enable please');
 }
 
 async function loadDefaultData() {
-    const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz'
-    const response = await fetch(url);
-    const blob = await response.arrayBuffer();
-    const compressed = new Uint8Array(blob);
-    const file = pako.inflate(compressed);
-    setupNifti(file)
+  const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
+  const response = await fetch(url);
+  const blob = await response.arrayBuffer();
+  const compressed = new Uint8Array(blob);
+  const file = pako.inflate(compressed);
+  setupNifti(file);
 }
