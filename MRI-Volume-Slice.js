@@ -5,7 +5,7 @@ class MRISlice {
       this.loadNewNifti(nifti);
       this.useCrosshairs = true;
       this.lastEvent = null;
-      this.scrollDistance = 2;
+      this.scrollDistance = 1;
     }
 
     loadNewNifti(nifti) {
@@ -158,24 +158,18 @@ class MRISlice {
         .forEach((canvas) => {
           canvas.addEventListener('wheel', (event) => {
             const fakeEvent = {
-              target: this.lastEvent.target,
-              x: this.lastEvent.x,
-              y: this.lastEvent.y
+              target: event.target,
+              type: 'wheel',
+              deltaY: 0,
             }
 
             if (event.deltaY > 0) {
               // scrolling down
-              fakeEvent.y += this.scrollDistance;
+              fakeEvent.deltaY = this.scrollDistance;
             } else if (event.deltaY < 0) {
               // scrolling up
-              fakeEvent.y -= this.scrollDistance;
-            } else if (event.deltaX > 0) {
-              // scrolling right
-              fakeEvent.x += this.scrollDistance;
-            } else if (event.deltaX < 0) {
-              // scrolling left
-              fakeEvent.x -= this.scrollDistance;
-            }
+              fakeEvent.deltaY = -this.scrollDistance;
+            } 
             this.updateCanvases(fakeEvent);
           })
         });
@@ -196,42 +190,61 @@ class MRISlice {
       if(isXCanvas) {
           const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
           const zViewNeedsUpdating = horizontalCoor !== this.currentView.z;
-
-          if(yViewNeedsUpdating) {
-              this.currentView.y = verticalCoor;
-              this.currentYImageData = this.getYViewSlice(verticalCoor);
-          }
-          if(zViewNeedsUpdating) {
-              this.currentView.z = horizontalCoor;
-              this.currentZImageData = this.getZViewSlice(horizontalCoor);
-          }
-      } else if (isYCanvas){
-          const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
-          const zViewNeedsUpdating = verticalCoor !== this.currentView.z;
+          const xViewNeedsUpdating = event.type === 'wheel';
 
           if(xViewNeedsUpdating) {
-              this.currentView.x = horizontalCoor;
-              this.currentXImageData = this.getXViewSlice(horizontalCoor);
+            this._updateCurrentView({x: this.currentView.x + event.deltaY})
+            this.currentXImageData = this.getXViewSlice(this.currentView.x);
+          } else {
+            if(yViewNeedsUpdating) {
+              this.currentView.y = verticalCoor;
+              this.currentYImageData = this.getYViewSlice(verticalCoor);
+            }
+            if(zViewNeedsUpdating) {
+              this.currentView.z = horizontalCoor;
+              this.currentZImageData = this.getZViewSlice(horizontalCoor);
+            }
           }
-          if(zViewNeedsUpdating) {
-              this.currentView.z = this.size.z - verticalCoor;
-              this.currentZImageData = this.getZViewSlice(this.size.z - verticalCoor);
+        } else if (isYCanvas){
+          const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
+          const zViewNeedsUpdating = verticalCoor !== this.currentView.z;
+          const yViewNeedsUpdating = event.type === 'wheel';
+
+          if(yViewNeedsUpdating) {
+            this._updateCurrentView({y: this.currentView.y + event.deltaY})
+            this.currentYImageData = this.getYViewSlice(this.currentView.y);
+          } else {
+            if(xViewNeedsUpdating) {
+                this.currentView.x = horizontalCoor;
+                this.currentXImageData = this.getXViewSlice(horizontalCoor);
+            }
+            if(zViewNeedsUpdating) {
+                this.currentView.z = this.size.z - verticalCoor;
+                this.currentZImageData = this.getZViewSlice(this.size.z - verticalCoor);
+            }
           }
       } else {
           const xViewNeedsUpdating = horizontalCoor !== this.currentView.x;
           const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
+          const zViewNeedsUpdating = event.type === 'wheel';
 
-          if(xViewNeedsUpdating) {
-              this.currentView.x = horizontalCoor;
-              this.currentXImageData = this.getXViewSlice(horizontalCoor);
-          }
-          if(yViewNeedsUpdating) {
-              this.currentView.y = verticalCoor;
-              this.currentYImageData = this.getYViewSlice(verticalCoor);
+          if(zViewNeedsUpdating) {
+            this._updateCurrentView({z: this.currentView.z + event.deltaY})
+            this.currentZImageData = this.getZViewSlice(this.currentView.z);
+          } else {
+
+            if(xViewNeedsUpdating) {
+                this.currentView.x = horizontalCoor;
+                this.currentXImageData = this.getXViewSlice(horizontalCoor);
+            }
+            if(yViewNeedsUpdating) {
+                this.currentView.y = verticalCoor;
+                this.currentYImageData = this.getYViewSlice(verticalCoor);
+            }
           }
       }
 
-        this._drawCrossHairs(this.contexts, this.currentView);
+      this._drawCrossHairs(this.contexts, this.currentView);
     }
 
     showCrosshairs(){
@@ -268,6 +281,18 @@ class MRISlice {
             contexts.y.fillStyle = this.useCrosshairs ? zHairColor : transparent;
             contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
             contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
+    }
+
+    _updateCurrentView({x, y, z}) {
+      if (x && x >= 0 && x < this.size.x) {
+        this.currentView.x = x;
+      }
+      if (y && y >= 0 && y < this.size.y) {
+        this.currentView.y = y;
+      }
+      if (z && z >= 0 && z < this.size.z) {
+        this.currentView.z = z;
+      }
     }
 }
 
