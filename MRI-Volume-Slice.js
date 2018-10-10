@@ -157,6 +157,7 @@ class MRISlice {
       [this.canvases.x, this.canvases.y, this.canvases.z]
         .forEach((canvas) => {
           canvas.addEventListener('wheel', (event) => {
+            event.preventDefault();
             const fakeEvent = {
               target: event.target,
               type: 'wheel',
