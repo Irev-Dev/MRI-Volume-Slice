@@ -19,6 +19,7 @@ function appendCanvasesToHTML() {
 }
 
 document.getElementById('file-input').onchange = function (event) {
+
   const fr = new FileReader();
   fr.onload = event => setupNifti(event.target.result);
   fr.readAsArrayBuffer(event.target.files[0]);
@@ -35,7 +36,14 @@ document.getElementById('toggle-cross-hairs').onchange = function (event) {
 function setupNifti(file) {
   mRISlice.loadNewNifti(nifti.parse(file));
   mRISlice.mouseNavigationEnabled('enable please');
+  hideLoader()
 }
+
+function hideLoader() {
+  const loader = document.getElementById('PrincipalLoader')
+  loader.style.display = 'none'
+}
+
 
 async function loadDefaultData() {
   const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
@@ -43,5 +51,6 @@ async function loadDefaultData() {
   const blob = await response.arrayBuffer();
   const compressed = new Uint8Array(blob);
   const file = pako.inflate(compressed);
+  hideLoader()
   setupNifti(file);
 }
