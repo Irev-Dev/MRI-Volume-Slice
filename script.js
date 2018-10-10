@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import nifti from 'nifti-js';
 import pako from 'pako';
-import MRISlice from './MRI-Volume-Slice';
+import MRISlice from './mri-volume-slice.js';
 
 const mRISlice = new MRISlice();
 
