@@ -32,12 +32,6 @@ document.getElementById('toggle-cross-hairs').onchange = function (event) {
   }
 };
 
-document.querySelectorAll('canvas').forEach((canvas) => {
-  canvas.onwheel = function (event) {
-    event.preventDefault();
-  };
-});
-
 function setupNifti(file) {
   mRISlice.loadNewNifti(nifti.parse(file));
   mRISlice.mouseNavigationEnabled('enable please');
