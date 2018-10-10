@@ -11,6 +11,7 @@ const zDiv = document.getElementById('x-view-wrapper');
 
 loadDefaultData(niftiData);
 appendCanvasesToHTML();
+addListeners([xDiv, yDiv, zDiv]);
 
 function appendCanvasesToHTML() {
     xDiv.appendChild(mRISlice.canvases.z);
@@ -44,4 +45,19 @@ async function loadDefaultData(niftiData) {
     const fr = new FileReader();
     fr.onload = setupNifti;
     fr.readAsArrayBuffer(blob);
+}
+
+function addListeners(divs) {
+    divs.forEach(div => {
+        div.addEventListener("mouseover", disableBodyScroll);
+        div.addEventListener("mouseout", enableBodyScroll);
+    });
+}
+
+function enableBodyScroll(e) {
+    document.querySelector('body').style.overflowY = "auto";
+}
+
+function disableBodyScroll(e) {
+    document.querySelector('body').style.overflowY = "hidden";
 }
