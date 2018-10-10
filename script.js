@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import nifti from 'nifti-js';
+import pako from 'pako';
 import MRISlice from './MRI-Volume-Slice';
-import niftiData from './data/sub-study002_ses-after_anat_sub-study002_ses-after_T1w.nii';
 
 const mRISlice = new MRISlice();
 
@@ -9,7 +9,7 @@ const xDiv = document.getElementById('z-view-wrapper');
 const yDiv = document.getElementById('y-view-wrapper');
 const zDiv = document.getElementById('x-view-wrapper');
 
-loadDefaultData(niftiData);
+loadDefaultData();
 appendCanvasesToHTML();
 
 function appendCanvasesToHTML() {
@@ -38,16 +38,16 @@ document.querySelectorAll('canvas').forEach(function(canvas) {
     }
 });
 
-function setupNifti(event) {
-    mRISlice.loadNewNifti(nifti.parse(event.target.result));
+function setupNifti(file) {
+    mRISlice.loadNewNifti(nifti.parse(file));
     mRISlice.mouseNavigationEnabled('enable please')
 }
 
-async function loadDefaultData(niftiData) {
-    const response = await fetch(niftiData);
-    const blob = await response.blob();
-
-    const fr = new FileReader();
-    fr.onload = setupNifti;
-    fr.readAsArrayBuffer(blob);
+async function loadDefaultData() {
+    const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz'
+    const response = await fetch(url);
+    const blob = await response.arrayBuffer();
+    const compressed = new Uint8Array(blob);
+    const file = pako.inflate(compressed);
+    setupNifti(file)
 }
