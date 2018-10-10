@@ -1,13 +1,14 @@
 import 'babel-polyfill';
 import nifti from 'nifti-js';
 import pako from 'pako';
-import MRISlice from './MRI-Volume-Slice';
+import MRISlice from './mri-volume-slice.js';
 
 const mRISlice = new MRISlice();
 
 const xDiv = document.getElementById('z-view-wrapper');
 const yDiv = document.getElementById('y-view-wrapper');
 const zDiv = document.getElementById('x-view-wrapper');
+
 
 loadDefaultData();
 appendCanvasesToHTML();
