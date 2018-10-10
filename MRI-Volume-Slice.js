@@ -265,7 +265,7 @@ class MRISlice {
             const transparent = 'rgba(255, 255, 255, 0';
             const xHairColor = 'yellow';
             const yHairColor = 'cyan';
-            const zHairColor = 'purple';
+            const zHairColor = 'magenta';
 
             contexts.z.fillStyle = this.useCrosshairs ? xHairColor : transparent;
             contexts.y.fillStyle = this.useCrosshairs ? xHairColor : transparent;
