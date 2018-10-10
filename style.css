@@ -10,12 +10,12 @@ h1 {
 }
 
 .pull-center {
-    width: 490px;
+    width: 496px;
     margin: 0 auto;
 }
 
 .view-ports {
-    text-align: center;
+    font-size: 0;
 }
 
 .view-port {
@@ -30,6 +30,10 @@ h1 {
 .view-port.view-port-empty {
     width: 224px;
     visibility: hidden;
+}
+
+.view-port canvas {
+    max-width: 100%;
 }
 
 .view-settings {
