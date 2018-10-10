@@ -20,7 +20,7 @@ function appendCanvasesToHTML() {
 
 document.getElementById('file-input').onchange = function (event) {
     const fr = new FileReader();
-    fr.onload = setupNifti;
+    fr.onload = (event) => setupNifti(event.target.result);
     fr.readAsArrayBuffer(event.target.files[0]);
 };
 
