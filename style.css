@@ -9,7 +9,7 @@ h1 {
     text-align: center;
 }
 
-#PrincipalLoader {
+#principal-loader {
     position: fixed;
     top: 0;
     left: 0;
@@ -22,7 +22,7 @@ h1 {
     align-items: center;
 }
 /* From https://codepen.io/sideshowjack/pen/WaryNb?page=2 */
-#LoadingBar {
+#loading-bar {
     font-family: "Open Sans", sans-serif;
     width: 30%;
     display: block;
@@ -37,7 +37,7 @@ h1 {
     height: 10px;
 }
 
-#LoadingBar:after {
+#loading-bar:after {
     content: "";
     position: absolute;
     top: 0;
@@ -45,11 +45,11 @@ h1 {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.3);
-    -webkit-animation: loadBar 2s cubic-bezier(0.09, 0.89, 0.7, 0.71) infinite;
-    animation: loadBar 2s cubic-bezier(0.09, 0.89, 0.7, 0.71) infinite;
+    -webkit-animation: load-bar 2s cubic-bezier(0.09, 0.89, 0.7, 0.71) infinite;
+    animation: load-bar 2s cubic-bezier(0.09, 0.89, 0.7, 0.71) infinite;
 }
 
-@-webkit-keyframes loadBar {
+@-webkit-keyframes load-bar {
     0% {
         left: -110%;
     }
@@ -59,7 +59,7 @@ h1 {
     }
 }
 
-@keyframes loadBar {
+@keyframes load-bar {
     0% {
         left: -110%;
     }
@@ -70,7 +70,7 @@ h1 {
 }
 
 .pull-center {
-    width: 490px;
+    max-width: 600px;
     margin: 0 auto;
 }
 
@@ -78,9 +78,15 @@ h1 {
     text-align: center;
 }
 
+.view-ports-block {
+    display: inline-block;
+    text-align: left;
+    font-size: 0;
+}
+
 .view-port {
-    min-height: 224px;
-    max-width: 224px;
+    /*min-height: 224px;*/
+    /*max-width: 224px;*/
     border: 2px solid #999;
     background-color: #000;
     margin: 10px;
@@ -91,6 +97,10 @@ h1 {
     width: 224px;
     visibility: hidden;
 }
+
+/*.view-port canvas {
+    max-width: 100%;
+}*/
 
 .view-settings {
     margin-bottom: 40px;

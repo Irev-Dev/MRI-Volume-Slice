@@ -41,7 +41,7 @@ function setupNifti(file) {
 }
 
 function hideLoader() {
-  const loader = document.getElementById('PrincipalLoader')
+  const loader = document.getElementById('principal-loader')
   loader.style.display = 'none'
 }
 

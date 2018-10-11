@@ -8,17 +8,18 @@
 <body>
 
 <div class="pull-center">
-    <div id="PrincipalLoader">
-        <div id="LoadingBar">Please wait...</div>
+    <div id="principal-loader">
+        <div id="loading-bar">Please wait...</div>
     </div>
     <h1>MRI Viewer</h1>
-    <div class="ImagesContainer">
-        <div class="view-port" id="z-view-wrapper" data-view="z"></div>
-        <div class="view-port" id="x-view-wrapper" data-view="x"></div>
-        <div class="view-port" id="y-view-wrapper" data-view="y"></div>
+    <div class="view-ports">
+        <div class="view-ports-block">
+            <div class="view-port" id="z-view-wrapper" data-view="z"></div>
+            <div class="view-port" id="x-view-wrapper" data-view="x"></div><br/>
+            <div class="view-port" id="y-view-wrapper" data-view="y"></div>
+        </div>
     </div>
     <hr>
-
     <form class="view-settings">
         <h2>Settings</h2>
         <div class="toggle">
@@ -29,7 +30,6 @@
             <input name="file-upload-field" type="file" id="file-input" name="file[]" class="file-upload-field"
                    value="">
         </div>
-
     </form>
 </div>
 
