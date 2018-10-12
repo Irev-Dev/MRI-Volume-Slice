@@ -18,20 +18,20 @@ class MRISlice {
   }
 
   getZViewSlice(slice) {
-    const sliceIndex = this._get1DIndex(0, 0, slice);
+    const sliceIndex = get1DIndex(0, 0, slice, this.size);
     const sliceLength = this.size.x * this.size.y;
     const sliceXY = this.volume.slice(sliceIndex, sliceIndex + sliceLength);
-    return this._grayScaleToRGBA(sliceXY, this.size.x, this.size.y);
+    return grayScaleToRGBA(sliceXY, this.size.x, this.size.y);
   }
 
   getYViewSlice(slice) {
     const sliceXZ = [];
     const rowLength = this.size.x;
     for (let zIndex = this.size.z - 1; zIndex >= 0; zIndex--) {
-      const rowIndex = this._get1DIndex(0, slice, zIndex);
+      const rowIndex = get1DIndex(0, slice, zIndex, this.size);
       sliceXZ.push(...this.volume.slice(rowIndex, rowIndex + rowLength));
     }
-    return this._grayScaleToRGBA(sliceXZ, this.size.x, this.size.z);
+    return grayScaleToRGBA(sliceXZ, this.size.x, this.size.z);
   }
 
   getXViewSlice(slice) {
@@ -39,34 +39,10 @@ class MRISlice {
     // The order of these nested loops is important
     for (let yIndex = 0; yIndex < this.size.y; yIndex++) {
       for (let zIndex = 0; zIndex < this.size.z; zIndex++) {
-        sliceYZ.push(this.volume[this._get1DIndex(slice, yIndex, zIndex)]);
+        sliceYZ.push(this.volume[get1DIndex(slice, yIndex, zIndex, this.size)]);
       }
     }
-    return this._grayScaleToRGBA(sliceYZ, this.size.z, this.size.y);
-  }
-
-  _grayScaleToRGBA(sliceData, width, height) {
-    const rGBASliceData = sliceData.reduce((accumulate, colourChannels) => {
-      const alpha = 255;
-      accumulate.push(colourChannels, colourChannels, colourChannels, alpha);
-      return accumulate;
-    }, []);
-    return new ImageData(new Uint8ClampedArray(rGBASliceData), width, height);
-  }
-
-  _get1DIndex(x, y, z) {
-    return x + y * this.size.x + z * this.size.x * this.size.y;
-  }
-
-  _get3DIndex(index, size) {
-    const zChunkLength = size.x * size.y;
-    const yChunkLength = size.y;
-
-    const z = Math.floor(index / zChunkLength);
-    const y = Math.floor((index - z) / yChunkLength);
-    const x = index - z - y;
-
-    return [x, y, z];
+    return grayScaleToRGBA(sliceYZ, this.size.z, this.size.y);
   }
 
   _createCanvases() {
@@ -116,12 +92,12 @@ class MRISlice {
     };
 
     const theMax = nifti.data.reduce((accumulate, item) => {
-      accumulate = item > accumulate ? item : accumulate;
+      accumulate = item > accumulate ? item : accumulate; // eslint-disable-line no-param-reassign
       return accumulate;
     }, 0);
 
     const theMin = nifti.data.reduce((accumulate, item) => {
-      accumulate = item < accumulate ? item : accumulate;
+      accumulate = item < accumulate ? item : accumulate; // eslint-disable-line no-param-reassign
       return accumulate;
     }, 0);
 
@@ -131,8 +107,8 @@ class MRISlice {
   mouseNavigationEnabled(isEnabled) {
     if (isEnabled) {
       this.mouseDown = false;
-      document.body.addEventListener('mousedown', () => this.mouseDown = true);
-      document.body.addEventListener('mouseup', () => this.mouseDown = false);
+      document.body.addEventListener('mousedown', () => this.mouseDown = true); // eslint-disable-line no-return-assign
+      document.body.addEventListener('mouseup', () => this.mouseDown = false); // eslint-disable-line no-return-assign
 
       this.canvases.z.addEventListener('click', event => this.updateCanvases(event));
       this.canvases.z.addEventListener('mousemove', (event) => {
@@ -296,5 +272,29 @@ class MRISlice {
     }
   }
 }
+
+function grayScaleToRGBA(sliceData, width, height) {
+  const rGBASliceData = sliceData.reduce((accumulate, colourChannels) => {
+    const alpha = 255;
+    accumulate.push(colourChannels, colourChannels, colourChannels, alpha);
+    return accumulate;
+  }, []);
+  return new ImageData(new Uint8ClampedArray(rGBASliceData), width, height);
+}
+
+function get1DIndex(x, y, z, sizes) {
+  return x + y * sizes.x + z * sizes.x * sizes.y;
+}
+
+// function get3DIndex(index, size) {
+//   const zChunkLength = size.x * size.y;
+//   const yChunkLength = size.y;
+
+//   const z = Math.floor(index / zChunkLength);
+//   const y = Math.floor((index - z) / yChunkLength);
+//   const x = index - z - y;
+
+//   return [x, y, z];
+// }
 
 export default MRISlice;
