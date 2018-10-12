@@ -1,7 +1,9 @@
+/* global document, FileReader, fetch */
+
 import 'babel-polyfill';
 import nifti from 'nifti-js';
 import pako from 'pako';
-import MRISlice from './mri-volume-slice.js';
+import MRISlice from './mri-volume-slice';
 
 const mRISlice = new MRISlice();
 
@@ -19,14 +21,13 @@ function appendCanvasesToHTML() {
   zDiv.appendChild(mRISlice.canvases.x);
 }
 
-document.getElementById('file-input').onchange = function (event) {
-
+document.getElementById('file-input').onchange = (event) => {
   const fr = new FileReader();
-  fr.onload = event => setupNifti(event.target.result);
+  fr.onload = fileLoadEvent => setupNifti(fileLoadEvent.target.result);
   fr.readAsArrayBuffer(event.target.files[0]);
 };
 
-document.getElementById('toggle-cross-hairs').onchange = function (event) {
+document.getElementById('toggle-cross-hairs').onchange = (event) => {
   if (event.target.checked) {
     mRISlice.showCrosshairs();
   } else {
@@ -37,12 +38,12 @@ document.getElementById('toggle-cross-hairs').onchange = function (event) {
 function setupNifti(file) {
   mRISlice.loadNewNifti(nifti.parse(file));
   mRISlice.mouseNavigationEnabled('enable please');
-  hideLoader()
+  hideLoader();
 }
 
 function hideLoader() {
-  const loader = document.getElementById('principal-loader')
-  loader.style.display = 'none'
+  const loader = document.getElementById('principal-loader');
+  loader.style.display = 'none';
 }
 
 
@@ -52,6 +53,6 @@ async function loadDefaultData() {
   const blob = await response.arrayBuffer();
   const compressed = new Uint8Array(blob);
   const file = pako.inflate(compressed);
-  hideLoader()
+  hideLoader();
   setupNifti(file);
 }

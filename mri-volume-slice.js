@@ -1,3 +1,4 @@
+/* global document, ImageData, Uint8ClampedArray */
 
 class MRISlice {
   constructor(nifti) {
@@ -6,31 +7,32 @@ class MRISlice {
     this.useCrosshairs = true;
     this.lastEvent = null;
     this.scrollDistance = 1;
+    this.currentImageData = {};
   }
 
   loadNewNifti(nifti) {
     if (nifti) {
       this._setupNifti(nifti);
       this._setCanvasWidthHeight(this.size);
-      this._drawCrossHairs(this.contexts, this.currentView);
+      this._drawCrossHairs(this.currentView);
     }
   }
 
   getZViewSlice(slice) {
-    const sliceIndex = this._get1DIndex(0, 0, slice);
+    const sliceIndex = get1DIndex(0, 0, slice, this.size);
     const sliceLength = this.size.x * this.size.y;
     const sliceXY = this.volume.slice(sliceIndex, sliceIndex + sliceLength);
-    return this._grayScaleToRGBA(sliceXY, this.size.x, this.size.y);
+    return grayScaleToRGBA(sliceXY, this.size.x, this.size.y);
   }
 
   getYViewSlice(slice) {
     const sliceXZ = [];
     const rowLength = this.size.x;
     for (let zIndex = this.size.z - 1; zIndex >= 0; zIndex--) {
-      const rowIndex = this._get1DIndex(0, slice, zIndex);
+      const rowIndex = get1DIndex(0, slice, zIndex, this.size);
       sliceXZ.push(...this.volume.slice(rowIndex, rowIndex + rowLength));
     }
-    return this._grayScaleToRGBA(sliceXZ, this.size.x, this.size.z);
+    return grayScaleToRGBA(sliceXZ, this.size.x, this.size.z);
   }
 
   getXViewSlice(slice) {
@@ -38,34 +40,10 @@ class MRISlice {
     // The order of these nested loops is important
     for (let yIndex = 0; yIndex < this.size.y; yIndex++) {
       for (let zIndex = 0; zIndex < this.size.z; zIndex++) {
-        sliceYZ.push(this.volume[this._get1DIndex(slice, yIndex, zIndex)]);
+        sliceYZ.push(this.volume[get1DIndex(slice, yIndex, zIndex, this.size)]);
       }
     }
-    return this._grayScaleToRGBA(sliceYZ, this.size.z, this.size.y);
-  }
-
-  _grayScaleToRGBA(sliceData, width, height) {
-    const rGBASliceData = sliceData.reduce((accumulate, colourChannels) => {
-      const alpha = 255;
-      accumulate.push(colourChannels, colourChannels, colourChannels, alpha);
-      return accumulate;
-    }, []);
-    return new ImageData(new Uint8ClampedArray(rGBASliceData), width, height);
-  }
-
-  _get1DIndex(x, y, z) {
-    return x + y * this.size.x + z * this.size.x * this.size.y;
-  }
-
-  _get3DIndex(index, size) {
-    const zChunkLength = size.x * size.y;
-    const yChunkLength = size.y;
-
-    const z = Math.floor(index / zChunkLength);
-    const y = Math.floor((index - z) / yChunkLength);
-    const x = index - z - y;
-
-    return [x, y, z];
+    return grayScaleToRGBA(sliceYZ, this.size.z, this.size.y);
   }
 
   _createCanvases() {
@@ -89,13 +67,14 @@ class MRISlice {
     this.canvases.z.width = size.x;
     this.canvases.z.height = size.y;
 
-    this.currentXImageData = this.getXViewSlice(this.currentView.x);
-    this.currentYImageData = this.getYViewSlice(this.currentView.y);
-    this.currentZImageData = this.getZViewSlice(this.currentView.z);
+    this.currentImageData.x = this.getXViewSlice(this.currentView.x);
+    this.currentImageData.y = this.getYViewSlice(this.currentView.y);
+    this.currentImageData.z = this.getZViewSlice(this.currentView.z);
 
-    this.contexts.x.putImageData(this.currentXImageData, 0, 0);
-    this.contexts.y.putImageData(this.currentYImageData, 0, 0);
-    this.contexts.z.putImageData(this.currentZImageData, 0, 0);
+    Object.entries(this.contexts).forEach(([axis, canvas]) => {
+      const imageData = this.currentImageData[axis];
+      canvas.putImageData(imageData, 0, 0);
+    });
   }
 
   _setupNifti(nifti) {
@@ -115,65 +94,46 @@ class MRISlice {
     };
 
     const theMax = nifti.data.reduce((accumulate, item) => {
-      accumulate = item > accumulate ? item : accumulate;
+      accumulate = item > accumulate ? item : accumulate; // eslint-disable-line no-param-reassign
       return accumulate;
     }, 0);
 
     const theMin = nifti.data.reduce((accumulate, item) => {
-      accumulate = item < accumulate ? item : accumulate;
+      accumulate = item < accumulate ? item : accumulate; // eslint-disable-line no-param-reassign
       return accumulate;
     }, 0);
 
-    this.volume = nifti.data.map(item => Math.round((item - theMin) * 255 / (theMax - theMin)));
+    this.volume = new Uint8ClampedArray(
+      nifti.data.map(item => Math.round((item - theMin) * 255 / (theMax - theMin))),
+    );
   }
 
   mouseNavigationEnabled(isEnabled) {
     if (isEnabled) {
       this.mouseDown = false;
-      document.body.addEventListener('mousedown', event => this.mouseDown = true);
-      document.body.addEventListener('mouseup', event => this.mouseDown = false);
-
-      this.canvases.z.addEventListener('click', event => this.updateCanvases(event));
-      this.canvases.z.addEventListener('mousemove', (event) => {
-        if (this.mouseDown) {
-          this.updateCanvases(event);
-        }
-      });
-
-      this.canvases.y.addEventListener('click', event => this.updateCanvases(event));
-      this.canvases.y.addEventListener('mousemove', (event) => {
-        if (this.mouseDown) {
-          this.updateCanvases(event);
-        }
-      });
-
-      this.canvases.x.addEventListener('click', event => this.updateCanvases(event));
-      this.canvases.x.addEventListener('mousemove', (event) => {
-        if (this.mouseDown) {
-          this.updateCanvases(event);
-        }
-      });
-
-      [this.canvases.x, this.canvases.y, this.canvases.z]
-        .forEach((canvas) => {
-          canvas.addEventListener('wheel', (event) => {
-            event.preventDefault();
-            const fakeEvent = {
-              target: event.target,
-              type: 'wheel',
-              deltaY: 0,
-            };
-
-            if (event.deltaY > 0) {
-              // scrolling down
-              fakeEvent.deltaY = this.scrollDistance;
-            } else if (event.deltaY < 0) {
-              // scrolling up
-              fakeEvent.deltaY = -this.scrollDistance;
-            }
-            this.updateCanvases(fakeEvent);
-          });
+      document.body.addEventListener('mousedown', () => this.mouseDown = true); // eslint-disable-line no-return-assign
+      document.body.addEventListener('mouseup', () => this.mouseDown = false); // eslint-disable-line no-return-assign
+      Object.values(this.canvases).forEach((canvas) => {
+        canvas.addEventListener('mousedown', event => this.updateCanvases(event));
+        canvas.addEventListener('mousemove', (event) => {
+          if (this.mouseDown) this.updateCanvases(event);
         });
+        canvas.addEventListener('wheel', (event) => {
+          event.preventDefault();
+          const fakeEvent = {
+            target: event.target,
+            type: 'wheel',
+            deltaY: 0,
+          };
+
+          if (event.deltaY > 0) { // scrolling down
+            fakeEvent.deltaY = this.scrollDistance;
+          } else if (event.deltaY < 0) { // scrolling up
+            fakeEvent.deltaY = -this.scrollDistance;
+          }
+          this.updateCanvases(fakeEvent);
+        });
+      });
     } else {
       // TODO remove event listeners if
     }
@@ -186,7 +146,7 @@ class MRISlice {
 
     const isXCanvas = event.target === this.canvases.x;
     const isYCanvas = event.target === this.canvases.y;
-    const isZCanvas = event.target === this.canvases.z;
+    // const isZCanvas = event.target === this.canvases.z;
 
     if (isXCanvas) {
       const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
@@ -195,15 +155,15 @@ class MRISlice {
 
       if (xViewNeedsUpdating) {
         this._updateCurrentView({ x: this.currentView.x + event.deltaY });
-        this.currentXImageData = this.getXViewSlice(this.currentView.x);
+        this.currentImageData.x = this.getXViewSlice(this.currentView.x);
       } else {
         if (yViewNeedsUpdating) {
           this.currentView.y = verticalCoor;
-          this.currentYImageData = this.getYViewSlice(verticalCoor);
+          this.currentImageData.y = this.getYViewSlice(verticalCoor);
         }
         if (zViewNeedsUpdating) {
           this.currentView.z = horizontalCoor;
-          this.currentZImageData = this.getZViewSlice(horizontalCoor);
+          this.currentImageData.z = this.getZViewSlice(horizontalCoor);
         }
       }
     } else if (isYCanvas) {
@@ -213,15 +173,15 @@ class MRISlice {
 
       if (yViewNeedsUpdating) {
         this._updateCurrentView({ y: this.currentView.y + event.deltaY });
-        this.currentYImageData = this.getYViewSlice(this.currentView.y);
+        this.currentImageData.y = this.getYViewSlice(this.currentView.y);
       } else {
         if (xViewNeedsUpdating) {
           this.currentView.x = horizontalCoor;
-          this.currentXImageData = this.getXViewSlice(horizontalCoor);
+          this.currentImageData.x = this.getXViewSlice(horizontalCoor);
         }
         if (zViewNeedsUpdating) {
           this.currentView.z = this.size.z - verticalCoor;
-          this.currentZImageData = this.getZViewSlice(this.size.z - verticalCoor);
+          this.currentImageData.z = this.getZViewSlice(this.size.z - verticalCoor);
         }
       }
     } else {
@@ -231,56 +191,56 @@ class MRISlice {
 
       if (zViewNeedsUpdating) {
         this._updateCurrentView({ z: this.currentView.z + event.deltaY });
-        this.currentZImageData = this.getZViewSlice(this.currentView.z);
+        this.currentImageData.z = this.getZViewSlice(this.currentView.z);
       } else {
         if (xViewNeedsUpdating) {
           this.currentView.x = horizontalCoor;
-          this.currentXImageData = this.getXViewSlice(horizontalCoor);
+          this.currentImageData.x = this.getXViewSlice(horizontalCoor);
         }
         if (yViewNeedsUpdating) {
           this.currentView.y = verticalCoor;
-          this.currentYImageData = this.getYViewSlice(verticalCoor);
+          this.currentImageData.y = this.getYViewSlice(verticalCoor);
         }
       }
     }
 
-    this._drawCrossHairs(this.contexts, this.currentView);
+    this._drawCrossHairs(this.currentView);
   }
 
   showCrosshairs() {
     this.useCrosshairs = true;
-    this._drawCrossHairs(this.contexts, this.currentView);
+    this._drawCrossHairs(this.currentView);
   }
 
   hideCrossHairs() {
     this.useCrosshairs = false;
-    this._drawCrossHairs(this.contexts, this.currentView);
+    this._drawCrossHairs(this.currentView);
   }
 
-  _drawCrossHairs(contexts, viewCoors) {
-    this.contexts.x.putImageData(this.currentXImageData, 0, 0);
-    this.contexts.y.putImageData(this.currentYImageData, 0, 0);
-    this.contexts.z.putImageData(this.currentZImageData, 0, 0);
+  _drawCrossHairs(viewCoors) {
+    this.contexts.x.putImageData(this.currentImageData.x, 0, 0);
+    this.contexts.y.putImageData(this.currentImageData.y, 0, 0);
+    this.contexts.z.putImageData(this.currentImageData.z, 0, 0);
 
     const transparent = 'rgba(255, 255, 255, 0';
     const xHairColor = 'yellow';
     const yHairColor = 'cyan';
     const zHairColor = 'magenta';
 
-    contexts.z.fillStyle = this.useCrosshairs ? xHairColor : transparent;
-    contexts.y.fillStyle = this.useCrosshairs ? xHairColor : transparent;
-    contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
-    contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
+    this.contexts.z.fillStyle = this.useCrosshairs ? xHairColor : transparent;
+    this.contexts.y.fillStyle = this.useCrosshairs ? xHairColor : transparent;
+    this.contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
+    this.contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
 
-    contexts.z.fillStyle = this.useCrosshairs ? yHairColor : transparent;
-    contexts.x.fillStyle = this.useCrosshairs ? yHairColor : transparent;
-    contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
-    contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
+    this.contexts.z.fillStyle = this.useCrosshairs ? yHairColor : transparent;
+    this.contexts.x.fillStyle = this.useCrosshairs ? yHairColor : transparent;
+    this.contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
+    this.contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
 
-    contexts.x.fillStyle = this.useCrosshairs ? zHairColor : transparent;
-    contexts.y.fillStyle = this.useCrosshairs ? zHairColor : transparent;
-    contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
-    contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
+    this.contexts.x.fillStyle = this.useCrosshairs ? zHairColor : transparent;
+    this.contexts.y.fillStyle = this.useCrosshairs ? zHairColor : transparent;
+    this.contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
+    this.contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
   }
 
   _updateCurrentView({ x, y, z }) {
@@ -295,5 +255,29 @@ class MRISlice {
     }
   }
 }
+
+function grayScaleToRGBA(sliceData, width, height) {
+  const rGBASliceData = sliceData.reduce((accumulate, colourChannels) => {
+    const alpha = 255;
+    accumulate.push(colourChannels, colourChannels, colourChannels, alpha);
+    return accumulate;
+  }, []);
+  return new ImageData(new Uint8ClampedArray(rGBASliceData), width, height);
+}
+
+function get1DIndex(x, y, z, sizes) {
+  return x + y * sizes.x + z * sizes.x * sizes.y;
+}
+
+// function get3DIndex(index, size) {
+//   const zChunkLength = size.x * size.y;
+//   const yChunkLength = size.y;
+
+//   const z = Math.floor(index / zChunkLength);
+//   const y = Math.floor((index - z) / yChunkLength);
+//   const x = index - z - y;
+
+//   return [x, y, z];
+// }
 
 export default MRISlice;
