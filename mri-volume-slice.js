@@ -1,3 +1,4 @@
+/* global document, ImageData, Uint8ClampedArray */
 
 class MRISlice {
   constructor(nifti) {
@@ -12,7 +13,7 @@ class MRISlice {
     if (nifti) {
       this._setupNifti(nifti);
       this._setCanvasWidthHeight(this.size);
-      this._drawCrossHairs(this.contexts, this.currentView);
+      this._drawCrossHairs(this.currentView);
     }
   }
 
@@ -130,8 +131,8 @@ class MRISlice {
   mouseNavigationEnabled(isEnabled) {
     if (isEnabled) {
       this.mouseDown = false;
-      document.body.addEventListener('mousedown', event => this.mouseDown = true);
-      document.body.addEventListener('mouseup', event => this.mouseDown = false);
+      document.body.addEventListener('mousedown', () => this.mouseDown = true);
+      document.body.addEventListener('mouseup', () => this.mouseDown = false);
 
       this.canvases.z.addEventListener('click', event => this.updateCanvases(event));
       this.canvases.z.addEventListener('mousemove', (event) => {
@@ -186,7 +187,7 @@ class MRISlice {
 
     const isXCanvas = event.target === this.canvases.x;
     const isYCanvas = event.target === this.canvases.y;
-    const isZCanvas = event.target === this.canvases.z;
+    // const isZCanvas = event.target === this.canvases.z;
 
     if (isXCanvas) {
       const yViewNeedsUpdating = verticalCoor !== this.currentView.y;
@@ -244,20 +245,20 @@ class MRISlice {
       }
     }
 
-    this._drawCrossHairs(this.contexts, this.currentView);
+    this._drawCrossHairs(this.currentView);
   }
 
   showCrosshairs() {
     this.useCrosshairs = true;
-    this._drawCrossHairs(this.contexts, this.currentView);
+    this._drawCrossHairs(this.currentView);
   }
 
   hideCrossHairs() {
     this.useCrosshairs = false;
-    this._drawCrossHairs(this.contexts, this.currentView);
+    this._drawCrossHairs(this.currentView);
   }
 
-  _drawCrossHairs(contexts, viewCoors) {
+  _drawCrossHairs(viewCoors) {
     this.contexts.x.putImageData(this.currentXImageData, 0, 0);
     this.contexts.y.putImageData(this.currentYImageData, 0, 0);
     this.contexts.z.putImageData(this.currentZImageData, 0, 0);
@@ -267,20 +268,20 @@ class MRISlice {
     const yHairColor = 'cyan';
     const zHairColor = 'magenta';
 
-    contexts.z.fillStyle = this.useCrosshairs ? xHairColor : transparent;
-    contexts.y.fillStyle = this.useCrosshairs ? xHairColor : transparent;
-    contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
-    contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
+    this.contexts.z.fillStyle = this.useCrosshairs ? xHairColor : transparent;
+    this.contexts.y.fillStyle = this.useCrosshairs ? xHairColor : transparent;
+    this.contexts.z.fillRect(viewCoors.x, 0, 1, this.size.y);
+    this.contexts.y.fillRect(viewCoors.x, 0, 1, this.size.z);
 
-    contexts.z.fillStyle = this.useCrosshairs ? yHairColor : transparent;
-    contexts.x.fillStyle = this.useCrosshairs ? yHairColor : transparent;
-    contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
-    contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
+    this.contexts.z.fillStyle = this.useCrosshairs ? yHairColor : transparent;
+    this.contexts.x.fillStyle = this.useCrosshairs ? yHairColor : transparent;
+    this.contexts.z.fillRect(0, viewCoors.y, this.size.x, 1);
+    this.contexts.x.fillRect(0, viewCoors.y, this.size.z, 1);
 
-    contexts.x.fillStyle = this.useCrosshairs ? zHairColor : transparent;
-    contexts.y.fillStyle = this.useCrosshairs ? zHairColor : transparent;
-    contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
-    contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
+    this.contexts.x.fillStyle = this.useCrosshairs ? zHairColor : transparent;
+    this.contexts.y.fillStyle = this.useCrosshairs ? zHairColor : transparent;
+    this.contexts.x.fillRect(viewCoors.z, 0, 1, this.size.y);
+    this.contexts.y.fillRect(0, this.size.z - viewCoors.z, this.size.x, 1);
   }
 
   _updateCurrentView({ x, y, z }) {
