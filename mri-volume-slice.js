@@ -7,6 +7,7 @@ class MRISlice {
     this.useCrosshairs = true;
     this.lastEvent = null;
     this.scrollDistance = 1;
+    this.currentImageData = {};
   }
 
   loadNewNifti(nifti) {
@@ -66,13 +67,14 @@ class MRISlice {
     this.canvases.z.width = size.x;
     this.canvases.z.height = size.y;
 
-    this.currentXImageData = this.getXViewSlice(this.currentView.x);
-    this.currentYImageData = this.getYViewSlice(this.currentView.y);
-    this.currentZImageData = this.getZViewSlice(this.currentView.z);
+    this.currentImageData.x = this.getXViewSlice(this.currentView.x);
+    this.currentImageData.y = this.getYViewSlice(this.currentView.y);
+    this.currentImageData.z = this.getZViewSlice(this.currentView.z);
 
-    this.contexts.x.putImageData(this.currentXImageData, 0, 0);
-    this.contexts.y.putImageData(this.currentYImageData, 0, 0);
-    this.contexts.z.putImageData(this.currentZImageData, 0, 0);
+    Object.entries(this.contexts).forEach(([axis, canvas]) => {
+      const imageData = this.currentImageData[axis];
+      canvas.putImageData(imageData, 0, 0);
+    });
   }
 
   _setupNifti(nifti) {
@@ -101,7 +103,9 @@ class MRISlice {
       return accumulate;
     }, 0);
 
-    this.volume = nifti.data.map(item => Math.round((item - theMin) * 255 / (theMax - theMin)));
+    this.volume = new Uint8ClampedArray(
+      nifti.data.map(item => Math.round((item - theMin) * 255 / (theMax - theMin))),
+    );
   }
 
   mouseNavigationEnabled(isEnabled) {
@@ -109,48 +113,27 @@ class MRISlice {
       this.mouseDown = false;
       document.body.addEventListener('mousedown', () => this.mouseDown = true); // eslint-disable-line no-return-assign
       document.body.addEventListener('mouseup', () => this.mouseDown = false); // eslint-disable-line no-return-assign
-
-      this.canvases.z.addEventListener('click', event => this.updateCanvases(event));
-      this.canvases.z.addEventListener('mousemove', (event) => {
-        if (this.mouseDown) {
-          this.updateCanvases(event);
-        }
-      });
-
-      this.canvases.y.addEventListener('click', event => this.updateCanvases(event));
-      this.canvases.y.addEventListener('mousemove', (event) => {
-        if (this.mouseDown) {
-          this.updateCanvases(event);
-        }
-      });
-
-      this.canvases.x.addEventListener('click', event => this.updateCanvases(event));
-      this.canvases.x.addEventListener('mousemove', (event) => {
-        if (this.mouseDown) {
-          this.updateCanvases(event);
-        }
-      });
-
-      [this.canvases.x, this.canvases.y, this.canvases.z]
-        .forEach((canvas) => {
-          canvas.addEventListener('wheel', (event) => {
-            event.preventDefault();
-            const fakeEvent = {
-              target: event.target,
-              type: 'wheel',
-              deltaY: 0,
-            };
-
-            if (event.deltaY > 0) {
-              // scrolling down
-              fakeEvent.deltaY = this.scrollDistance;
-            } else if (event.deltaY < 0) {
-              // scrolling up
-              fakeEvent.deltaY = -this.scrollDistance;
-            }
-            this.updateCanvases(fakeEvent);
-          });
+      Object.values(this.canvases).forEach((canvas) => {
+        canvas.addEventListener('mousedown', event => this.updateCanvases(event));
+        canvas.addEventListener('mousemove', (event) => {
+          if (this.mouseDown) this.updateCanvases(event);
         });
+        canvas.addEventListener('wheel', (event) => {
+          event.preventDefault();
+          const fakeEvent = {
+            target: event.target,
+            type: 'wheel',
+            deltaY: 0,
+          };
+
+          if (event.deltaY > 0) { // scrolling down
+            fakeEvent.deltaY = this.scrollDistance;
+          } else if (event.deltaY < 0) { // scrolling up
+            fakeEvent.deltaY = -this.scrollDistance;
+          }
+          this.updateCanvases(fakeEvent);
+        });
+      });
     } else {
       // TODO remove event listeners if
     }
@@ -172,15 +155,15 @@ class MRISlice {
 
       if (xViewNeedsUpdating) {
         this._updateCurrentView({ x: this.currentView.x + event.deltaY });
-        this.currentXImageData = this.getXViewSlice(this.currentView.x);
+        this.currentImageData.x = this.getXViewSlice(this.currentView.x);
       } else {
         if (yViewNeedsUpdating) {
           this.currentView.y = verticalCoor;
-          this.currentYImageData = this.getYViewSlice(verticalCoor);
+          this.currentImageData.y = this.getYViewSlice(verticalCoor);
         }
         if (zViewNeedsUpdating) {
           this.currentView.z = horizontalCoor;
-          this.currentZImageData = this.getZViewSlice(horizontalCoor);
+          this.currentImageData.z = this.getZViewSlice(horizontalCoor);
         }
       }
     } else if (isYCanvas) {
@@ -190,15 +173,15 @@ class MRISlice {
 
       if (yViewNeedsUpdating) {
         this._updateCurrentView({ y: this.currentView.y + event.deltaY });
-        this.currentYImageData = this.getYViewSlice(this.currentView.y);
+        this.currentImageData.y = this.getYViewSlice(this.currentView.y);
       } else {
         if (xViewNeedsUpdating) {
           this.currentView.x = horizontalCoor;
-          this.currentXImageData = this.getXViewSlice(horizontalCoor);
+          this.currentImageData.x = this.getXViewSlice(horizontalCoor);
         }
         if (zViewNeedsUpdating) {
           this.currentView.z = this.size.z - verticalCoor;
-          this.currentZImageData = this.getZViewSlice(this.size.z - verticalCoor);
+          this.currentImageData.z = this.getZViewSlice(this.size.z - verticalCoor);
         }
       }
     } else {
@@ -208,15 +191,15 @@ class MRISlice {
 
       if (zViewNeedsUpdating) {
         this._updateCurrentView({ z: this.currentView.z + event.deltaY });
-        this.currentZImageData = this.getZViewSlice(this.currentView.z);
+        this.currentImageData.z = this.getZViewSlice(this.currentView.z);
       } else {
         if (xViewNeedsUpdating) {
           this.currentView.x = horizontalCoor;
-          this.currentXImageData = this.getXViewSlice(horizontalCoor);
+          this.currentImageData.x = this.getXViewSlice(horizontalCoor);
         }
         if (yViewNeedsUpdating) {
           this.currentView.y = verticalCoor;
-          this.currentYImageData = this.getYViewSlice(verticalCoor);
+          this.currentImageData.y = this.getYViewSlice(verticalCoor);
         }
       }
     }
@@ -235,9 +218,9 @@ class MRISlice {
   }
 
   _drawCrossHairs(viewCoors) {
-    this.contexts.x.putImageData(this.currentXImageData, 0, 0);
-    this.contexts.y.putImageData(this.currentYImageData, 0, 0);
-    this.contexts.z.putImageData(this.currentZImageData, 0, 0);
+    this.contexts.x.putImageData(this.currentImageData.x, 0, 0);
+    this.contexts.y.putImageData(this.currentImageData.y, 0, 0);
+    this.contexts.z.putImageData(this.currentImageData.z, 0, 0);
 
     const transparent = 'rgba(255, 255, 255, 0';
     const xHairColor = 'yellow';
