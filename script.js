@@ -4,6 +4,7 @@ import 'babel-polyfill';
 import nifti from 'nifti-js';
 import pako from 'pako';
 import MRISlice from './mri-volume-slice';
+import * as idb from 'idb-keyval';
 
 const mRISlice = new MRISlice();
 
@@ -36,6 +37,7 @@ document.getElementById('toggle-cross-hairs').onchange = (event) => {
 };
 
 function setupNifti(file) {
+  idb.set("LastNiftiFile", file);
   mRISlice.loadNewNifti(nifti.parse(file));
   mRISlice.mouseNavigationEnabled('enable please');
   hideLoader();
@@ -48,6 +50,8 @@ function hideLoader() {
 
 
 async function loadDefaultData() {
+  const lastFile = await idb.get("LastNiftiFile");
+  if (lastFile) return setupNifti(lastFile);
   const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
   const response = await fetch(url);
   const blob = await response.arrayBuffer();
