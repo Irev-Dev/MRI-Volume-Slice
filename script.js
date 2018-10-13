@@ -1,4 +1,4 @@
-/* global document, FileReader, fetch */
+/* global document, FileReader, fetch, window, caches */
 
 import 'babel-polyfill';
 import nifti from 'nifti-js';
