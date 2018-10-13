@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.26.0",
+    "idb-keyval": "^3.1.0",
     "nifti-js": "^1.0.1",
     "pako": "^1.0.6"
   }
