@@ -48,8 +48,21 @@ function hideLoader() {
 
 
 async function loadDefaultData() {
-  const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
-  const response = await fetch(url);
+  const url = "https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz";
+  // load from the cache API or fetch if not found
+  let response;
+  if ("caches" in window) {
+    response = await caches.match(url);
+    if (!response) {
+      response = await fetch(url);
+      const cache = await caches.open(url);
+      await cache.put(url, response.clone());
+    }
+  } else {
+    // browser does not support the cache APi
+    response = await fetch(url);
+  }
+
   const blob = await response.arrayBuffer();
   const compressed = new Uint8Array(blob);
   const file = pako.inflate(compressed);
