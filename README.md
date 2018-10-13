@@ -12,7 +12,11 @@ At the moment this is very much a hobby project of mine, so you can expect bugs.
 
 ## contributions and development
 
-If you're not a developer but have ideas for how this can be used, or ways to extend it's functionality feel free to let me know 😁 🙌
+If you're researcher I want to hear from you 👋. Do you have ideas for useful features? Or do you have a use case for this but need help implement it? Please contact me.
+
+### Pull requests 
+
+We're using ESLint, I would appreciate it if ran the auto-fix (don't worry about other warnings and errors, I haven't finished setting up custom rules yet)
 
 ### Setup for seasoned devs
 
