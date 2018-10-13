@@ -4,7 +4,7 @@ A 3 axis viewer or 3d volumes right in the broswer. Currently supports loading i
 
 [Currently Live Here!](https://mrislice.netlify.com)
 
-![3 view MRI display](https://res.cloudinary.com/irevdev/image/upload/v1539009277/MRI-Volume-Slice/fMRIexample2.gif "3 view MRI display")
+![3 view MRI display](https://res.cloudinary.com/irevdev/image/upload/v1539448865/MRI-Volume-Slice/fMRIexample3.gif "3 view MRI display")
 
 This kind of three axis viewer is common in neuro science, but in the spirit of accessibility, open-source and open-science; here is an open-source viewer on the universal platform (the web browser).
 
@@ -16,7 +16,7 @@ If you're researcher I want to hear from you 👋. Do you have ideas for useful 
 
 ### Pull requests 
 
-We're using ESLint, I would appreciate it if ran the auto-fix (don't worry about other warnings and errors, I haven't finished setting up custom rules yet)
+We're using ESLint, I would appreciate it if you ran the auto-fix (don't worry about other warnings and errors, I haven't finished setting up custom rules yet)
 
 ### Setup for seasoned devs
 
