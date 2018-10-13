@@ -3,8 +3,8 @@
 import 'babel-polyfill';
 import nifti from 'nifti-js';
 import pako from 'pako';
-import MRISlice from './mri-volume-slice';
 import * as idb from 'idb-keyval';
+import MRISlice from './mri-volume-slice';
 
 const mRISlice = new MRISlice();
 
@@ -37,7 +37,7 @@ document.getElementById('toggle-cross-hairs').onchange = (event) => {
 };
 
 function setupNifti(file) {
-  idb.set("LastNiftiFile", file);
+  idb.set('LastNiftiFile', file);
   mRISlice.loadNewNifti(nifti.parse(file));
   mRISlice.mouseNavigationEnabled('enable please');
   hideLoader();
@@ -66,7 +66,7 @@ async function loadDefaultData() {
     // browser does not support the cache APi
     response = await fetch(url);
   }
-  
+
   const blob = await response.arrayBuffer();
   const compressed = new Uint8Array(blob);
   const file = pako.inflate(compressed);
