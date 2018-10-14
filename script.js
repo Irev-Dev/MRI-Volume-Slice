@@ -49,8 +49,11 @@ function hideLoader() {
 }
 
 function getOpenEuroUrl() {
+  const fallBackUrl = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
   const { location } = window;
-  return location.href.substring(location.href.indexOf(location.search) + 1)
+  const passedInUrl = location.href.substring(location.href.indexOf(location.search) + 1)
+
+  return passedInUrl || fallBackUrl;
 };
 
 
