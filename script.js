@@ -48,7 +48,7 @@ function hideLoader() {
   loader.style.display = 'none';
 }
 
-getOpenEuroUrl = () => {
+function getOpenEuroUrl() {
   const { location } = window;
   return location.href.substring(location.href.indexOf(location.search) + 1)
 };
