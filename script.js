@@ -48,11 +48,19 @@ function hideLoader() {
   loader.style.display = 'none';
 }
 
+function getOpenEuroUrl() {
+  const fallBackUrl = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
+  const { location } = window;
+  const passedInUrl = location.href.substring(location.href.indexOf(location.search) + 1)
+
+  return passedInUrl || fallBackUrl;
+};
+
 
 async function loadDefaultData() {
   const lastFile = await idb.get('LastNiftiFile');
   if (lastFile) return setupNifti(lastFile);
-  const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
+  const url = getOpenEuroUrl();
   // load from the cache API or fetch if not found
   let response;
   if ('caches' in window) {
