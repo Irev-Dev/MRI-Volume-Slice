@@ -63,7 +63,7 @@ async function loadDefaultData() {
   const lastFile = await idb.get('LastNiftiFile');
   if (lastFile) return setupNifti(lastFile);
 
-  return loadRandomImage();
+  loadRandomImage();
 }
 
 async function loadRandomImage() {
@@ -124,12 +124,14 @@ function getNiftiFileUrl(id) {
       const { data: { dataset: { draft: { files = [] } = {} } = {} } = {} } = data;
 
       let finalUrl = '';
+      const fileNameRegEx = new RegExp('T1w.+.?nii.gz$')
 
       for (let i = 0; i < files.length; i++) {
         const { urls = [] } = files[i];
         /* some of the urls in results set comes back with datalad domain which error out sometimes,
          so use only urls from openneuro */
-        finalUrl = urls.find(item => item.endsWith('nii.gz') && item.startsWith('https://openneuro.org'));
+        finalUrl = urls.find(item => item.startsWith('https://openneuro.org') && fileNameRegEx.test(item));
+
         if (finalUrl) {
           break;
         }
