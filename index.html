@@ -22,10 +22,15 @@
     <hr>
     <form class="view-settings">
         <h2>Settings</h2>
-        <div class="toggle">
-            <input class="input input-checkbox" type="checkbox" id="toggle-cross-hairs" value="enabled" checked>
-            <label for="toggle-cross-hairs">Toggle Cross Hairs</label>
-        </div>
+        <div class="button-wrapper">
+          <div class="toggle">
+              <input class="input input-checkbox" type="checkbox" id="toggle-cross-hairs" value="enabled" checked>
+              <label for="toggle-cross-hairs">Toggle Cross Hairs</label>
+          </div>
+          <div class="toggle">
+            <input class="load-button" type="button" id="load-new-mri" value="Load new MRI">
+          </div> 
+        </div>              
         <div class="file-upload-wrapper" data-text="Select an '.nii' file!">
             <input name="file-upload-field" type="file" id="file-input" name="file[]" class="file-upload-field"
                    value="">

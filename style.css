@@ -112,7 +112,6 @@ h1 {
 
 /* Toggle from: https://gist.github.com/2947721120/7532eedd404ebd095e8a */
 .toggle {
-    margin-top: 40px;
     margin-bottom: 30px;
 }
 .toggle input[type="checkbox"] {
@@ -213,4 +212,25 @@ h1 {
     display: block;
     cursor: pointer;
     width: 100%;
+}
+.button-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.load-button {
+  height: 60px;
+  background: #4daf7c;
+  color: #fff; 
+  font-size: 16px;
+  line-height: 60px;
+  padding: 0 15px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none; 
+  outline: 0;
+}
+.load-button:hover {
+  background: #3d8c63;
 }

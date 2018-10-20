@@ -37,6 +37,11 @@ document.getElementById('toggle-cross-hairs').onchange = (event) => {
   }
 };
 
+document.getElementById('load-new-mri').onclick = () => {
+  showLoader();
+  loadRandomImage();
+};
+
 function setupNifti(file) {
   idb.set('LastNiftiFile', file);
   mRISlice.loadNewNifti(nifti.parse(file));
@@ -49,13 +54,21 @@ function hideLoader() {
   loader.style.display = 'none';
 }
 
+function showLoader() {
+  const loader = document.getElementById('principal-loader');
+  loader.style.display = 'flex';
+}
 
 async function loadDefaultData() {
   const lastFile = await idb.get('LastNiftiFile');
   if (lastFile) return setupNifti(lastFile);
 
+  return loadRandomImage();
+}
+
+async function loadRandomImage() {
   const { id = '' } = await getDatasetId();
-  const url = await getNiftiFileUrl(id);
+  const url = id ? await getNiftiFileUrl(id) : defaultUrl;
 
   // load from the cache API or fetch if not found
   let response;
@@ -123,5 +136,5 @@ function getNiftiFileUrl(id) {
       }
 
       return finalUrl || defaultUrl;
-    });
+    }).catch(() => defaultUrl);
 }
