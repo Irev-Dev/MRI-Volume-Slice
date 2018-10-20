@@ -11,6 +11,7 @@ const mRISlice = new MRISlice();
 const xDiv = document.getElementById('z-view-wrapper');
 const yDiv = document.getElementById('y-view-wrapper');
 const zDiv = document.getElementById('x-view-wrapper');
+const defaultUrl = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
 
 
 loadDefaultData();
@@ -52,7 +53,10 @@ function hideLoader() {
 async function loadDefaultData() {
   const lastFile = await idb.get('LastNiftiFile');
   if (lastFile) return setupNifti(lastFile);
-  const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
+
+  const { id = '' } = await getDatasetId();
+  const url = await getNiftiFileUrl(id);
+
   // load from the cache API or fetch if not found
   let response;
   if ('caches' in window) {
@@ -72,4 +76,52 @@ async function loadDefaultData() {
   const file = pako.inflate(compressed);
   hideLoader();
   setupNifti(file);
+}
+
+function getDatasetId() {
+  return fetch('https://openneuro.org/crn/graphql?query={datasets{id}}')
+    .then(response => response.json())
+    .then((resp) => {
+      const { data: { datasets = [] } = {} } = resp;
+      const numIds = datasets.length;
+
+      if (numIds === 0) {
+        return '';
+      }
+
+      const randomIndex = Math.floor(Math.random() * numIds);
+      return datasets[randomIndex];
+    }).catch(() => '');
+}
+
+function getNiftiFileUrl(id) {
+  const fileQuery = `{"query":"{dataset(id: \\"${id}\\") {id draft {id partial files {urls filename}}}}"}`;
+  const fetchParams = {
+    method: 'POST',
+    body: fileQuery,
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json',
+    },
+  };
+
+  return fetch('https://openneuro.org/crn/graphql', fetchParams)
+    .then(response => response.json())
+    .then((data) => {
+      const { data: { dataset: { draft: { files = [] } = {} } = {} } = {} } = data;
+
+      let finalUrl = '';
+
+      for (let i = 0; i < files.length; i++) {
+        const { urls = [] } = files[i];
+        /* some of the urls in results set comes back with datalad domain which error out sometimes,
+         so use only urls from openneuro */
+        finalUrl = urls.find(item => item.endsWith('nii.gz') && item.startsWith('https://openneuro.org'));
+        if (finalUrl) {
+          break;
+        }
+      }
+
+      return finalUrl || defaultUrl;
+    });
 }
