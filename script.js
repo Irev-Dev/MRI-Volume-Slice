@@ -13,6 +13,7 @@ const xDiv = document.getElementById('z-view-wrapper');
 const yDiv = document.getElementById('y-view-wrapper');
 const zDiv = document.getElementById('x-view-wrapper');
 
+const isIncognito = !(window.RequestFileSystem || window.webkitRequestFileSystem);
 
 loadDefaultData();
 appendCanvasesToHTML();
@@ -62,12 +63,11 @@ async function loadDefaultData() {
   } catch (e) {
     console.error(e);
   }
-  console.log('fetching');
   if (lastFile) return setupNifti(lastFile);
   const url = 'https://openneuro.org/crn/datasets/ds001417/files/sub-study002:ses-after:anat:sub-study002_ses-after_T1w.nii.gz';
   // load from the cache API or fetch if not found
   let response;
-  if ('caches' in window) {
+  if ('caches' in window && !isIncognito) {
     try {
       response = await caches.match(url);
       if (!response) {
