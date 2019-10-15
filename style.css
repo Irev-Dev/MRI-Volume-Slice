@@ -21,6 +21,11 @@ h1 {
     justify-content: center;
     align-items: center;
 }
+
+#error {
+    display: none;
+}
+
 /* From https://codepen.io/sideshowjack/pen/WaryNb?page=2 */
 #loading-bar {
     font-family: "Open Sans", sans-serif;
